@@ -2,10 +2,12 @@ const express = require('express')
 const app = express()
 const port = 3000
 
-let counter = 3
+const routes = require('./routes.json')
 
-app.get('/', (req, res) => {
-  res.send(`count: ${counter}`)
+routes.forEach(({ method, path, returnValue }) => {
+  app[method](path, (req, res) => {
+    res.send(returnValue)
+  })
 })
 
 app.listen(port, () => {
