@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -47,34 +48,51 @@ type NodeService struct {
 	cmd    *exec.Cmd
 }
 
+var routesFileName = "node-app/routes.json"
+
 func (service NodeService) writeRoutes() {
 	routesJson, err := json.Marshal(service.routes)
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.WriteFile("node-app/routes.json", routesJson, 0666)
+	os.WriteFile(routesFileName, routesJson, 0666)
 }
 
-func (service *NodeService) loadRoutes() {
-	// TODO
+func (service *NodeService) loadRoutes() bool {
+	routesJson, err := os.ReadFile(routesFileName)
+	if err != nil {
+		return false
+	}
+	var newRoutes []route
+	err = json.Unmarshal(routesJson, &newRoutes)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !reflect.DeepEqual(service.routes, newRoutes) {
+		service.routes = newRoutes
+		return true
+	}
+	return false
+}
+
+func (service *NodeService) start() {
+	service.cmd = exec.Command("node", "node-app/app.js")
+	err := service.cmd.Start()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (service *NodeService) restart() {
-	var err error
-
 	if service.cmd != nil && service.cmd.Process != nil {
-		err = service.cmd.Process.Kill()
+		err := service.cmd.Process.Kill()
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	service.cmd = exec.Command("node", "node-app/app.js")
-	err = service.cmd.Start()
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	service.start()
 }
 
 func (service *NodeService) updateRoutes(method string, path string) {
@@ -112,19 +130,24 @@ func main() {
 	nodeService := NodeService{routes: []route{}}
 
 	// read the current routes file into memory
-	nodeService.loadRoutes()
+	loaded := nodeService.loadRoutes()
 
 	// if routes file does not exist, write out default
-	nodeService.writeRoutes()
+	if !loaded {
+		nodeService.writeRoutes()
+	}
 
 	// start static service
-	nodeService.restart()
+	nodeService.start()
 
 	// when route file changes, update routes in memory
-	go watch("node-app/routes.json", nodeService.loadRoutes)
-
-	// when route file changes, restart static service
-	// go watch("node-app/routes.json", nodeService.restart)
+	// and restart if necessary
+	go watch("node-app/routes.json", func() {
+		changed := nodeService.loadRoutes()
+		if changed {
+			nodeService.restart()
+		}
+	})
 
 	// initialze proxy to static service
 	url, err := url.Parse("http://localhost:3001")
