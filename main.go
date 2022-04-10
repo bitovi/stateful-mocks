@@ -77,10 +77,33 @@ func (service *NodeService) loadRoutes() bool {
 
 func (service *NodeService) start() {
 	service.cmd = exec.Command("node", "node-app/app.js")
-	err := service.cmd.Start()
 
+	stdout, err := service.cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	err = service.cmd.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var out struct {
+		Status string `json:"status"`
+		Port   int    `json:"port"`
+	}
+
+	for {
+		err = json.NewDecoder(stdout).Decode(&out)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if out.Status == "listening" {
+			return
+		}
+
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 
@@ -117,9 +140,6 @@ func (service *NodeService) ProxyRequestHandler(staticServiceProxy *httputil.Rev
 
 		// restart static service
 		service.restart()
-
-		// TODO - make restart not return until the service is started
-		time.Sleep(200 * time.Millisecond)
 
 		// proxy request to static service
 		staticServiceProxy.ServeHTTP(w, r)
