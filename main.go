@@ -1,7 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -13,6 +17,7 @@ import (
 	"time"
 )
 
+// https://stackoverflow.com/questions/8270441/go-language-how-detect-file-changing
 func watch(filePath string, cb func()) error {
 	lastStat, err := os.Stat(filePath)
 
@@ -76,7 +81,7 @@ func (service *NodeService) loadRoutes() bool {
 }
 
 func (service *NodeService) start() {
-	service.cmd = exec.Command("node", "node-app/app.js")
+	service.cmd = exec.Command("node", "demo/server.js")
 
 	stdout, err := service.cmd.StdoutPipe()
 	if err != nil {
@@ -90,7 +95,7 @@ func (service *NodeService) start() {
 
 	var out struct {
 		Status string `json:"status"`
-		Port   int    `json:"port"`
+		url    string `json:"url"`
 	}
 
 	for {
@@ -135,11 +140,26 @@ func (service *NodeService) updateRoutes(method string, path string) {
 // ProxyRequestHandler handles the http request using proxy
 func (service *NodeService) ProxyRequestHandler(staticServiceProxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// https://stackoverflow.com/questions/49745252/reverseproxy-depending-on-the-request-body-in-golang
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// read request body
+		req := string(body)
+		if !strings.Contains(req, "query IntrospectionQuery") {
+			fmt.Println(req)
+		}
+
+		// assign a new body with previous byte slice
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
 		// update route file
-		service.updateRoutes(strings.ToLower(r.Method), r.URL.String())
+		// service.updateRoutes(strings.ToLower(r.Method), r.URL.String())
 
 		// restart static service
-		service.restart()
+		// service.restart()
 
 		// proxy request to static service
 		staticServiceProxy.ServeHTTP(w, r)
@@ -170,7 +190,7 @@ func main() {
 	})
 
 	// initialze proxy to static service
-	url, err := url.Parse("http://localhost:3001")
+	url, err := url.Parse("http://localhost:4000")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -182,5 +202,5 @@ func main() {
 	// handle all requests using the proxy handler
 	http.HandleFunc("/", nodeService.ProxyRequestHandler(staticServiceProxy))
 
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	log.Fatal(http.ListenAndServe(":4001", nil))
 }
