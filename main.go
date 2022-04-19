@@ -17,6 +17,9 @@ import (
 	"time"
 )
 
+// TODO - make this configurable
+var configFileName = "static/config.json"
+
 // https://stackoverflow.com/questions/8270441/go-language-how-detect-file-changing
 func watch(filePath string, cb func()) error {
 	lastStat, err := os.Stat(filePath)
@@ -42,165 +45,302 @@ func watch(filePath string, cb func()) error {
 	return nil
 }
 
-type route struct {
-	Method      string `json:"method"`
-	Path        string `json:"path"`
-	ReturnValue int    `json:"returnValue"`
+type StatefulEntityConfig struct {
+	Name  string `json:"name"`
+	Id    string `json:"id"`
+	State string `json:"state"`
+}
+type StateConfig struct {
+	State string      `json:"state"`
+	Data  interface{} `json:"data"`
+}
+type InstanceConfig struct {
+	Id     string        `json:"id"`
+	States []StateConfig `json:"states"`
+}
+type EntityConfig struct {
+	Name      string           `json:"name"`
+	Instances []InstanceConfig `json:"instances"`
+}
+type RequestConfig struct {
+	Method       string                 `json:"method"`
+	Path         string                 `json:"path"`
+	Body         interface{}            `json:"body"`
+	Response     StatefulEntityConfig   `json:"response"`
+	StateChanges []StatefulEntityConfig `json:"stateChanges"`
+}
+type Config struct {
+	Entities []EntityConfig  `json:"entities"`
+	Requests []RequestConfig `json:"requests"`
+}
+type StaticMockServer struct {
+	config  Config
+	cmd     *exec.Cmd
+	running bool
 }
 
-type NodeService struct {
-	routes []route
-	cmd    *exec.Cmd
-}
-
-var routesFileName = "node-app/routes.json"
-
-func (service NodeService) writeRoutes() {
-	routesJson, err := json.Marshal(service.routes)
+func (service StaticMockServer) writeConfig() {
+	configJson, err := json.MarshalIndent(service.config, "", "  ")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to write config file ", err)
 	}
-	os.WriteFile(routesFileName, routesJson, 0666)
+	os.WriteFile(configFileName, configJson, 0666)
 }
 
-func (service *NodeService) loadRoutes() bool {
-	routesJson, err := os.ReadFile(routesFileName)
+func (service *StaticMockServer) loadConfig() bool {
+	configJson, err := os.ReadFile(configFileName)
 	if err != nil {
 		return false
 	}
-	var newRoutes []route
-	err = json.Unmarshal(routesJson, &newRoutes)
+	var newConfig Config
+	err = json.Unmarshal(configJson, &newConfig)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to load config ", err)
 	}
-	if !reflect.DeepEqual(service.routes, newRoutes) {
-		service.routes = newRoutes
+	if !reflect.DeepEqual(service.config, newConfig) {
+		service.config = newConfig
 		return true
 	}
 	return false
 }
 
-func (service *NodeService) start() {
-	service.cmd = exec.Command("node", "demo/server.js")
+func (service *StaticMockServer) start() {
+	service.cmd = exec.Command("node", "static/server.js", "4001")
 
 	stdout, err := service.cmd.StdoutPipe()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to get stdout pipe from static service ", err)
 	}
 
 	err = service.cmd.Start()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to start static service ", err)
 	}
 
-	var out struct {
+	var serverStatusOutput struct {
 		Status string `json:"status"`
-		url    string `json:"url"`
 	}
 
 	for {
-		err = json.NewDecoder(stdout).Decode(&out)
+		err = json.NewDecoder(stdout).Decode(&serverStatusOutput)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Unable to decode static service stdout ", err)
 		}
 
-		if out.Status == "listening" {
+		if serverStatusOutput.Status == "listening" {
+			service.running = true
 			return
 		}
 
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 
-func (service *NodeService) restart() {
+func (service *StaticMockServer) restart() {
 	if service.cmd != nil && service.cmd.Process != nil {
+		service.running = false
 		err := service.cmd.Process.Kill()
+
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to kill static server ", err)
 		}
 	}
 
 	service.start()
 }
 
-func (service *NodeService) updateRoutes(method string, path string) {
-	existingRouteUpdated := false
-	for i, r := range service.routes {
-		if r.Method == method && r.Path == path {
-			service.routes[i] = route{method, path, r.ReturnValue + 1}
-			existingRouteUpdated = true
+func (service *StaticMockServer) updateConfig(method string, path string, body string) bool {
+	newRequest := true
+
+	for _, r := range service.config.Requests {
+		if r.Method == method && r.Path == path && r.Body == body {
+			newRequest = false
 		}
 	}
-	if !existingRouteUpdated {
-		service.routes = append(service.routes, route{method, path, 1})
+
+	if newRequest {
+		newRequestConfig := RequestConfig{
+			method,
+			path,
+			body,
+			StatefulEntityConfig{},
+			[]StatefulEntityConfig{},
+		}
+
+		// TODO - make this real code
+		if strings.Contains(body, "mutation") {
+			service.config.Entities = []EntityConfig{
+				EntityConfig{
+					"Person",
+					[]InstanceConfig{
+						InstanceConfig{
+							"1",
+							[]StateConfig{
+								StateConfig{
+									"state1",
+									map[string]interface{}{
+										"name": "Mark",
+										"age":  9,
+									},
+								},
+							},
+						},
+						InstanceConfig{
+							"2",
+							[]StateConfig{
+								StateConfig{
+									"state1",
+									map[string]interface{}{
+										"name": "Margaret",
+										"age":  47,
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+
+			newRequestConfig.Response = StatefulEntityConfig{
+				"Person",
+				"2",
+				"state1",
+			}
+
+			newRequestConfig.StateChanges = []StatefulEntityConfig{
+				StatefulEntityConfig{
+					"Person",
+					"2",
+					"state1",
+				},
+			}
+		} else {
+			newRequestConfig.Response = StatefulEntityConfig{
+				"Person",
+				"1",
+				"state1",
+			}
+
+			service.config.Entities = []EntityConfig{
+				EntityConfig{
+					"Person",
+					[]InstanceConfig{
+						InstanceConfig{
+							"1",
+							[]StateConfig{
+								StateConfig{
+									"state1",
+									map[string]interface{}{
+										"name": "Mark",
+										"age":  9,
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+		}
+		// END TODO - make this real code
+
+		service.config.Requests = append(service.config.Requests, newRequestConfig)
+		service.writeConfig()
+		return true
 	}
-	service.writeRoutes()
+
+	return false
+}
+
+type GraphQLRequest struct {
+	Query         string                 `json:"query"`
+	Variables     map[string]interface{} `json:"variables"`
+	OperationName string                 `json:"operationName"`
 }
 
 // ProxyRequestHandler handles the http request using proxy
-func (service *NodeService) ProxyRequestHandler(staticServiceProxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
+func (service *StaticMockServer) ProxyRequestHandler(staticServiceProxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// https://stackoverflow.com/questions/49745252/reverseproxy-depending-on-the-request-body-in-golang
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Unable to read request body ", err)
 		}
 
 		// read request body
 		req := string(body)
-		if !strings.Contains(req, "query IntrospectionQuery") {
-			fmt.Println(req)
+		isEmptyQuery := len(body) == 0
+		isIntrospectionQuery := strings.Contains(req, "query IntrospectionQuery")
+
+		if !isEmptyQuery && !isIntrospectionQuery {
+			// update config file
+			configChanged := service.updateConfig(strings.ToUpper(r.Method), r.URL.String(), req)
+
+			if configChanged {
+				// restart static service
+				service.restart()
+			}
 		}
 
 		// assign a new body with previous byte slice
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-		// update route file
-		// service.updateRoutes(strings.ToLower(r.Method), r.URL.String())
-
-		// restart static service
-		// service.restart()
-
 		// proxy request to static service
-		staticServiceProxy.ServeHTTP(w, r)
+		// if static service is restarting, wait
+		for {
+			if service.running {
+				staticServiceProxy.ServeHTTP(w, r)
+				return
+			}
+
+			time.Sleep(50 * time.Millisecond)
+		}
 	}
 }
 
 func main() {
-	nodeService := NodeService{routes: []route{}}
+	staticMockService := StaticMockServer{
+		config: Config{
+			Entities: []EntityConfig{},
+			Requests: []RequestConfig{},
+		},
+	}
 
-	// read the current routes file into memory
-	loaded := nodeService.loadRoutes()
+	// read the current config file into memory
+	loaded := staticMockService.loadConfig()
 
-	// if routes file does not exist, write out default
+	// if config file does not exist, write out default
 	if !loaded {
-		nodeService.writeRoutes()
+		staticMockService.writeConfig()
 	}
 
 	// start static service
-	nodeService.start()
+	staticMockService.start()
 
-	// when route file changes, update routes in memory
+	// when config file changes, update config in memory
 	// and restart if necessary
-	go watch("node-app/routes.json", func() {
-		changed := nodeService.loadRoutes()
+	go watch(configFileName, func() {
+		changed := staticMockService.loadConfig()
 		if changed {
-			nodeService.restart()
+			if staticMockService.running {
+				fmt.Println("config file changed... restarting")
+				staticMockService.restart()
+			}
 		}
 	})
 
 	// initialze proxy to static service
-	url, err := url.Parse("http://localhost:4000")
+	url, err := url.Parse("http://localhost:4001")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to parse URL ", err)
 	}
 	staticServiceProxy, err := httputil.NewSingleHostReverseProxy(url), nil
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to create single host proxy ", err)
 	}
 
 	// handle all requests using the proxy handler
-	http.HandleFunc("/", nodeService.ProxyRequestHandler(staticServiceProxy))
+	http.HandleFunc("/", staticMockService.ProxyRequestHandler(staticServiceProxy))
 
-	log.Fatal(http.ListenAndServe(":4001", nil))
+	fmt.Println("Listening on 4000")
+	log.Fatal(http.ListenAndServe(":4000", nil))
 }
