@@ -2,7 +2,7 @@ const { ApolloServer } = require("apollo-server")
 const { parse } = require("graphql")
 
 // TODO - pass this as an argument
-const typeDefs = require("../demo/schema")
+const typeDefs = require("./schema")
 
 // TODO - pass this as an argument
 const config = require("./config")
