@@ -1,15 +1,17 @@
+const fs = require("fs")
+const path = require("path")
 const { ApolloServer } = require("apollo-server")
 const { parse } = require("graphql")
 
-// TODO - pass this as an argument
-const typeDefs = require("./schema")
+// TODO - pass these as an argument
+const configFilePath = "../demo/config"
+const schemaFilePath = ("../demo/schema.graphql")
+const [ _, cmd, port = 4000 ] = process.argv
 
-// TODO - pass this as an argument
-const config = require("./config")
-
+const config = require(configFilePath)
 const { entities, requests } = config
 
-const [ _, cmd, port = 4000 ] = process.argv
+const typeDefs = fs.readFileSync(path.join(__dirname, schemaFilePath), 'utf8')
 
 const entitiesState = entities.map(({name, instances}) => {
   return {

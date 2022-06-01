@@ -1,5 +1,5 @@
 {
-  "name": "demo",
+  "name": "scripts",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,8 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "apollo-server": "^3.6.7",
-    "graphql": "^16.3.0",
-    "node-fetch": "^2.0.0"
+    "graphql-ergonomock": "^1.2.0"
   }
 }

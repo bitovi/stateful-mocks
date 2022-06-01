@@ -17,8 +17,8 @@ import (
 	"time"
 )
 
-// TODO - make this configurable
-var configFileName = "static/config.json"
+// TODO - pass this as an argument
+var configFileName = "demo/config.json"
 
 // https://stackoverflow.com/questions/8270441/go-language-how-detect-file-changing
 func watch(filePath string, cb func()) error {
@@ -174,13 +174,13 @@ func (service *StaticMockServer) updateConfig(method string, path string, body s
 					"Person",
 					[]InstanceConfig{
 						InstanceConfig{
-							"1",
+							"Nils",
 							[]StateConfig{
 								StateConfig{
-									"state1",
+									"created",
 									map[string]interface{}{
-										"name": "Mark",
-										"age":  9,
+										"name": "Nils",
+										"age":  35,
 									},
 								},
 							},
@@ -319,6 +319,7 @@ func main() {
 	// when config file changes, update config in memory
 	// and restart if necessary
 	go watch(configFileName, func() {
+    fmt.Println("File changed")
 		changed := staticMockService.loadConfig()
 		if changed {
 			if staticMockService.running {
