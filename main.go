@@ -319,7 +319,7 @@ func main() {
 	// when config file changes, update config in memory
 	// and restart if necessary
 	go watch(configFileName, func() {
-    fmt.Println("File changed")
+		fmt.Println("File changed")
 		changed := staticMockService.loadConfig()
 		if changed {
 			if staticMockService.running {
