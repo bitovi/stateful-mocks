@@ -1,101 +1,88 @@
-const fs = require("fs")
-const path = require("path")
-const { ApolloServer } = require("apollo-server")
-const { parse } = require("graphql")
+const fs = require('fs');
+const path = require('path');
+const { ApolloServer } = require('apollo-server');
+const { StateMachine, getEntityInstance } = require('./utils/stateMachine');
 
 // TODO - pass these as an argument
-const configFilePath = "../demo/config"
-const schemaFilePath = ("../demo/schema.graphql")
-const [ _, cmd, port = 4000 ] = process.argv
+const configFilePath = '../demo/config';
+const schemaFilePath = '../demo/schema.graphql';
+const [_, cmd, port = 4000] = process.argv;
 
-const config = require(configFilePath)
-const { entities, requests } = config
+const config = require(configFilePath);
+const { entities, requests } = config;
+const typeDefs = fs.readFileSync(path.join(__dirname, schemaFilePath), 'utf8');
 
-const typeDefs = fs.readFileSync(path.join(__dirname, schemaFilePath), 'utf8')
+//TODO: Improve the name of this constant, and many more. We need a consistent nomeclature for our objects/props
+const stateControllers = Object.keys(entities).map((key) => {
+  const instances = Object.keys(entities[key].instances).map((instanceId) => {
+    const { statesData, stateMachine } = entities[key].instances[instanceId];
 
-const entitiesState = entities.map(({name, instances}) => {
-  return {
-    name,
-    instances: instances.map(({id}) => ({
-      id,
-      state: null
-    }))
-  }
-})
+    return {
+      id: instanceId,
+      stateMachine: new StateMachine(statesData, stateMachine),
+    };
+  });
 
-const getEntityState = (name, id, state) => {
-  return entities
-    .find(e => e.name === name)
-    .instances
-    .find(i => i.id === id)
-    .states
-    .find(s => s.state === state)
-    ?.data
-}
+  return { entity: key, instances };
+});
 
-const getEntityCurrentState = (name, id) => {
-  const currentState = entitiesState
-    .find(e => e.name === name)
-    .instances
-    .find(i => i.id === id)
-    .state
+const resolvers = requests.reduce(
+  (resolvers, request) => {
+    switch (request.operation) {
+      case 'query':
+        return {
+          ...resolvers,
+          Query: {
+            ...resolvers.Query,
+            [request.operationName]() {
+              // TODO - compare request.variables
+              const { entity, id } = request.data;
+              const entityInstance = getEntityInstance(
+                stateControllers,
+                entity,
+                id
+              );
 
-  return getEntityState(name, id, currentState)
-}
+              return entityInstance.getCurrentStateData();
+            },
+          },
+        };
+      case 'mutation':
+        return {
+          ...resolvers,
+          Mutation: {
+            ...resolvers.Mutation,
+            [request.operationName]() {
+              request.stateChanges.forEach(({ id, state, entity }) => {
+                // TODO - compare request.variables
+                const entityInstance = getEntityInstance(
+                  stateControllers,
+                  entity,
+                  id
+                );
 
-const setEntityState = (name, id, state) => {
-  const instance = entitiesState
-    .find(e => e.name === name)
-    .instances
-    .find(i => i.id === id)
+                entityInstance.setCurrentState(state);
+              });
+              const { id, entity } = request.data;
+              const entityInstance = getEntityInstance(
+                stateControllers,
+                entity,
+                id
+              );
 
-  instance.state = state
-}
+              return entityInstance.getCurrentStateData();
+            },
+          },
+        };
+    }
 
-const resolvers = requests.reduce((resolvers, request) => {
-  const parsed = parse(JSON.parse(request.body).query)
-
-  const definition = parsed.definitions[0]
-  const queryOrMutationName = definition.selectionSet.selections[0].name.value
-
-  switch(definition.operation) {
-    case "query":
-      return {
-        ...resolvers,
-        Query: {
-          ...resolvers.Query,
-          [queryOrMutationName]() {
-            // TODO - compare request.variables
-
-            const {name, id} = request.response
-            return getEntityCurrentState(name, id)
-          }
-        }
-      }
-    case "mutation":
-      return {
-        ...resolvers,
-        Mutation: {
-          ...resolvers.Mutation,
-          [queryOrMutationName]() {
-            // TODO - compare request.variables
-
-            request.stateChanges.forEach(({name, id, state}) => {
-              setEntityState(name, id, state)
-            })
-
-            const {name, id, state} = request.response
-            return getEntityState(name, id, state)
-          }
-        }
-      }
-  }
-
-  return resolvers
-}, { Query: {}, Mutation: {} })
+    return resolvers;
+  },
+  { Query: {}, Mutation: {} }
+);
 
 const server = new ApolloServer({ typeDefs, resolvers });
 
 server.listen({ port }).then(({ url }) => {
-  console.log(`{ "status": "listening", "url": "${url}" }`)
+  console.log(`{ "status": "listening", "url": "${url}" }`);
 });
