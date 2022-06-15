@@ -2,7 +2,8 @@
   "env": {
     "browser": true,
     "commonjs": true,
-    "es2022": true
+    "es2022": true,
+    "jest": true
   },
   "extends": [
     "@bitovi/eslint-config/rules/base",
