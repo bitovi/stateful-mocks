@@ -17,6 +17,7 @@
     "@bitovi/eslint-config": "^1.0.1",
     "eslint": "^8.17.0",
     "eslint-config-prettier": "^8.5.0",
+    "jest": "^28.1.1",
     "prettier": "^2.7.0"
   }
 }
