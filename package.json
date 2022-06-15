@@ -1,0 +1,22 @@
+{
+  "name": "stateful-mocks",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:bitovi/stateful-mocks.git",
+  "author": "Bitovi",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "pretty": "prettier --check .",
+    "pretty:fix": "prettier --write ."
+  },
+  "devDependencies": {
+    "@bitovi/eslint-config": "^1.0.1",
+    "eslint": "^8.17.0",
+    "eslint-config-prettier": "^8.5.0",
+    "prettier": "^2.7.0"
+  }
+}
