@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const { ApolloServer } = require('apollo-server');
-const { StateMachine, getEntityInstance } = require('./utils/stateMachine');
+const { getEntityInstance } = require('./utils/stateMachine');
+const { generateControllersFromConfig } = require('./utils/stateController');
 
 // TODO - pass these as an argument
 const configFilePath = '../demo/config';
@@ -9,22 +10,11 @@ const schemaFilePath = '../demo/schema.graphql';
 const [_, cmd, port = 4000] = process.argv;
 
 const config = require(configFilePath);
-const { entities, requests } = config;
+const { requests } = config;
 const typeDefs = fs.readFileSync(path.join(__dirname, schemaFilePath), 'utf8');
 
 //TODO: Improve the name of this constant, and many more. We need a consistent nomeclature for our objects/props
-const stateControllers = Object.keys(entities).map((key) => {
-  const instances = Object.keys(entities[key].instances).map((instanceId) => {
-    const { statesData, stateMachine } = entities[key].instances[instanceId];
-
-    return {
-      id: instanceId,
-      stateMachine: new StateMachine(statesData, stateMachine),
-    };
-  });
-
-  return { entity: key, instances };
-});
+const stateController = generateControllersFromConfig(config);
 
 const resolvers = requests.reduce(
   (resolvers, request) => {
@@ -38,7 +28,7 @@ const resolvers = requests.reduce(
               // TODO - compare request.variables
               const { entity, id } = request.data;
               const entityInstance = getEntityInstance(
-                stateControllers,
+                stateController,
                 entity,
                 id
               );
@@ -56,7 +46,7 @@ const resolvers = requests.reduce(
               request.stateChanges.forEach(({ id, state, entity }) => {
                 // TODO - compare request.variables
                 const entityInstance = getEntityInstance(
-                  stateControllers,
+                  stateController,
                   entity,
                   id
                 );
@@ -65,7 +55,7 @@ const resolvers = requests.reduce(
               });
               const { id, entity } = request.data;
               const entityInstance = getEntityInstance(
-                stateControllers,
+                stateController,
                 entity,
                 id
               );
