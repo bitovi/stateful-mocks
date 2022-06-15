@@ -1,13 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 const { ApolloServer } = require('apollo-server');
+const { parse } = require('graphql');
+
 const { getEntityInstance } = require('./utils/stateMachine');
 const { generateControllersFromConfig } = require('./utils/stateController');
 
 // TODO - pass these as an argument
 const configFilePath = '../demo/config';
 const schemaFilePath = '../demo/schema.graphql';
-const [_, cmd, port = 4000] = process.argv;
+const [_, _cmd, port = 4000] = process.argv;
 
 const config = require(configFilePath);
 const { requests } = config;
@@ -18,21 +20,26 @@ const stateController = generateControllersFromConfig(config);
 
 const resolvers = requests.reduce(
   (resolvers, request) => {
-    switch (request.operation) {
+    const parsed = parse(JSON.parse(request.body).query);
+
+    const definition = parsed.definitions[0];
+    const queryOrMutationName =
+      definition.selectionSet.selections[0].name.value;
+
+    switch (definition.operation) {
       case 'query':
         return {
           ...resolvers,
           Query: {
             ...resolvers.Query,
-            [request.operationName]() {
+            [queryOrMutationName]() {
               // TODO - compare request.variables
-              const { entity, id } = request.data;
+              const { entity, id } = request.response;
               const entityInstance = getEntityInstance(
                 stateController,
                 entity,
                 id
               );
-
               return entityInstance.getCurrentStateData();
             },
           },
@@ -42,7 +49,7 @@ const resolvers = requests.reduce(
           ...resolvers,
           Mutation: {
             ...resolvers.Mutation,
-            [request.operationName]() {
+            [queryOrMutationName]() {
               request.stateChanges.forEach(({ id, state, entity }) => {
                 // TODO - compare request.variables
                 const entityInstance = getEntityInstance(
@@ -53,14 +60,15 @@ const resolvers = requests.reduce(
 
                 entityInstance.setCurrentState(state);
               });
-              const { id, entity } = request.data;
+
+              const { id, entity, state } = request.response;
               const entityInstance = getEntityInstance(
                 stateController,
                 entity,
                 id
               );
 
-              return entityInstance.getCurrentStateData();
+              return entityInstance.getStateData(state);
             },
           },
         };
