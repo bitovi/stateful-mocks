@@ -8,6 +8,7 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:verbose": "jest --watch --verbose",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "pretty": "prettier --check .",
