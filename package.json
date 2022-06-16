@@ -28,6 +28,7 @@
   "dependencies": {
     "apollo-server": "^3.9.0",
     "graphql": "^16.5.0",
+    "graphql-middleware": "^6.1.29",
     "nodemon": "^2.0.16",
     "xstate": "^4.32.1"
   }
