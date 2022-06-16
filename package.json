@@ -6,6 +6,7 @@
   "author": "Bitovi",
   "license": "MIT",
   "scripts": {
+    "start:dev": "nodemon src/server.js 4000",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:verbose": "jest --watch --verbose",
@@ -23,5 +24,11 @@
     "prettier": "^2.7.0",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "apollo-server": "^3.9.0",
+    "graphql": "^16.5.0",
+    "nodemon": "^2.0.16",
+    "xstate": "^4.32.1"
   }
 }
