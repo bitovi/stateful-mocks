@@ -18,6 +18,7 @@ const typeDefs = fs.readFileSync(path.join(__dirname, schemaFilePath), 'utf8');
 //TODO: Improve the name of this constant, and many more. We need a consistent nomeclature for our objects/props
 const stateController = generateControllersFromConfig(config);
 
+//TODO: Abstratic this into a function that can support multiple server types (graphql/rest) and returns "serve()" method
 const resolvers = requests.reduce(
   (resolvers, request) => {
     const parsed = parse(JSON.parse(request.body).query);
@@ -35,11 +36,13 @@ const resolvers = requests.reduce(
             [queryOrMutationName]() {
               // TODO - compare request.variables
               const { entity, id } = request.response;
+
               const entityInstance = getEntityInstance(
                 stateController,
                 entity,
                 id
               );
+
               return entityInstance.getCurrentStateData();
             },
           },
