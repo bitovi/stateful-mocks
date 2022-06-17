@@ -53,7 +53,7 @@ const resolvers = requests.reduce(
           Mutation: {
             ...resolvers.Mutation,
             [queryOrMutationName]() {
-              request.stateChanges.forEach(({ id, state, entity }) => {
+              request.stateChanges.forEach(({ id, event, entity }) => {
                 // TODO - compare request.variables
                 const entityInstance = getEntityInstance(
                   stateController,
@@ -61,7 +61,7 @@ const resolvers = requests.reduce(
                   id
                 );
 
-                entityInstance.send(state);
+                entityInstance.send(event);
               });
 
               const { id, entity, state } = request.response;
