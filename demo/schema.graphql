@@ -12,6 +12,19 @@ input CreatePersonInput {
   age: Int!
 }
 
+input UpdatePersonNameInput {
+  id: Int!
+  name: String!
+}
+
+input UpdatePersonAgeInput {
+  id: Int!
+  age: Int!
+}
+
 type Mutation {
   createPerson(input: CreatePersonInput!): Person
+  updatePersonName(input: UpdatePersonNameInput!): Person
+  updatePersondAge(input: UpdatePersonAgeInput!): Person
+  removePerson(id: Int!): Person
 }
