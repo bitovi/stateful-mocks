@@ -2,9 +2,9 @@ const { createMachine, interpret } = require("xstate");
 
 class StateMachine {
   constructor(statesData, machine) {
+    const _machine = createMachine(machine);
+    this.interpreter = interpret(_machine).start();
     this.statesData = statesData;
-    this.machine = createMachine(machine);
-    this.interpreter = interpret(this.machine).start();
   }
 
   getCurrentState() {
