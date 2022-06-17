@@ -1,6 +1,6 @@
 const { getEntityInstance } = require("../../utils/stateMachine");
 
-//TODO: Move mocks into separate file; maybe use a lib to mock instead of hardcoded data.
+//TODO: Move mocks into separate file
 const mockStateMachineParams = () => ({
   statesData: {
     empty: null,

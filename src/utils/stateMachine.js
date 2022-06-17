@@ -11,7 +11,7 @@ class StateMachine {
     return this.interpreter.state.value;
   }
 
-  setCurrentState(newState) {
+  send(newState) {
     this.interpreter.send(newState);
   }
 

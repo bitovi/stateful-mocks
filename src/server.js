@@ -61,7 +61,7 @@ const resolvers = requests.reduce(
                   id
                 );
 
-                entityInstance.setCurrentState(state);
+                entityInstance.send(state);
               });
 
               const { id, entity, state } = request.response;
