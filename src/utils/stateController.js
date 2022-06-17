@@ -1,4 +1,4 @@
-const { StateMachine } = require('./stateMachine.js');
+const { StateMachine } = require("./stateMachine.js");
 
 function generateControllersFromConfig({ entities }) {
   return Object.keys(entities).map((key) => {

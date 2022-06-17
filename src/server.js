@@ -1,19 +1,19 @@
-const fs = require('fs');
-const path = require('path');
-const { ApolloServer } = require('apollo-server');
-const { parse } = require('graphql');
+const fs = require("fs");
+const path = require("path");
+const { ApolloServer } = require("apollo-server");
+const { parse } = require("graphql");
 
-const { getEntityInstance } = require('./utils/stateMachine');
-const { generateControllersFromConfig } = require('./utils/stateController');
+const { getEntityInstance } = require("./utils/stateMachine");
+const { generateControllersFromConfig } = require("./utils/stateController");
 
 // TODO - pass these as an argument
-const configFilePath = '../demo/config';
-const schemaFilePath = '../demo/schema.graphql';
+const configFilePath = "../demo/config";
+const schemaFilePath = "../demo/schema.graphql";
 const [_, _cmd, port = 4000] = process.argv;
 
 const config = require(configFilePath);
 const { requests } = config;
-const typeDefs = fs.readFileSync(path.join(__dirname, schemaFilePath), 'utf8');
+const typeDefs = fs.readFileSync(path.join(__dirname, schemaFilePath), "utf8");
 
 //TODO: Improve the name of this constant, and many more. We need a consistent nomeclature for our objects/props
 const stateController = generateControllersFromConfig(config);
@@ -28,7 +28,7 @@ const resolvers = requests.reduce(
       definition.selectionSet.selections[0].name.value;
 
     switch (definition.operation) {
-      case 'query':
+      case "query":
         return {
           ...resolvers,
           Query: {
@@ -47,7 +47,7 @@ const resolvers = requests.reduce(
             },
           },
         };
-      case 'mutation':
+      case "mutation":
         return {
           ...resolvers,
           Mutation: {

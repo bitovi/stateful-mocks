@@ -1,4 +1,4 @@
-const { createMachine, interpret } = require('xstate');
+const { createMachine, interpret } = require("xstate");
 
 class StateMachine {
   constructor(statesData, machine) {
