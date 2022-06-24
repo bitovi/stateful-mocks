@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "apollo-server": "^3.9.0",
+    "casual": "^1.6.2",
     "graphql": "^15.8.0",
     "graphql-middleware": "^6.1.29",
     "xstate": "^4.32.1"
