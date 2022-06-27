@@ -1,0 +1,50 @@
+type Person {
+  id: Int!
+  name: String!
+  age: Int!
+  car: Car
+}
+
+type Car {
+  id: Int!
+  name: String!
+  colour: Colour
+}
+
+type Colour {
+  id: Int!
+  name: String!
+  shade: Shade
+}
+
+type Shade {
+  id: Int!
+  name: String!
+  hex: String!
+}
+
+type Query {
+  personByName(name: String): Person
+}
+
+input CreatePersonInput {
+  name: String!
+  age: Int!
+}
+
+input UpdatePersonNameInput {
+  id: Int!
+  name: String!
+}
+
+input UpdatePersonAgeInput {
+  id: Int!
+  age: Int!
+}
+
+type Mutation {
+  createPerson(input: CreatePersonInput!): Person
+  updatePersonName(input: UpdatePersonNameInput!): Person
+  updatePersonAge(input: UpdatePersonAgeInput!): Person
+  removePerson(id: Int!): Person
+}
