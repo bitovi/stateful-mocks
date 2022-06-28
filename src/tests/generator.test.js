@@ -1,14 +1,16 @@
 const { readFileSync } = require("fs");
 const path = require("path");
-const { getMock } = require("../../utils/mock");
+const { getMock } = require("../generator");
+
+const schema = readFileSync(
+  path.join(__dirname, "./resources/testSchema.graphql"),
+  "utf8"
+);
 
 describe("getMock", () => {
   it("Return all fields for Person", () => {
     const mocks = getMock({
-      schema: readFileSync(
-        path.join(__dirname, "../resources/testSchema.graphql"),
-        "utf8"
-      ),
+      schema,
       entity: "Person",
     });
 
@@ -34,10 +36,7 @@ describe("getMock", () => {
 
   it("Return only selected fields for Person", () => {
     const mocks = getMock({
-      schema: readFileSync(
-        path.join(__dirname, "../resources/testSchema.graphql"),
-        "utf8"
-      ),
+      schema,
       entity: "Person",
       fields: ["name", "age"],
     });
@@ -50,10 +49,7 @@ describe("getMock", () => {
 
   it("Handles nested properties", () => {
     const mocks = getMock({
-      schema: readFileSync(
-        path.join(__dirname, "../resources/testSchema.graphql"),
-        "utf8"
-      ),
+      schema,
       entity: "Person",
       fields: ["name", "age", "car.name", "car.id", "car.colour.shade.name"],
     });
