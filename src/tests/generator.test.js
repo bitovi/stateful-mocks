@@ -5,7 +5,7 @@ const { getMock } = require("../generator");
 const schema = readFileSync(
   path.join(__dirname, "./resources/testSchema.graphql"),
   "utf8"
-)
+);
 
 describe("getMock", () => {
   it("Return all fields for Person", () => {

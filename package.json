@@ -1,10 +1,13 @@
 {
   "name": "stateful-mocks",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "index.js",
   "repository": "git@github.com:bitovi/stateful-mocks.git",
   "author": "Bitovi",
   "license": "MIT",
+  "bin": {
+    "sms-gen": "bin/sms-gen.js"
+  },
   "scripts": {
     "start:dev": "nodemon src/server.js 4000",
     "test": "jest",
@@ -30,6 +33,7 @@
     "@graphql-tools/mock": "^8.7.0",
     "apollo-server": "^3.9.0",
     "casual": "^1.6.2",
+    "commander": "^9.3.0",
     "graphql": "^15.8.0",
     "graphql-middleware": "^6.1.29",
     "xstate": "^4.32.1"
