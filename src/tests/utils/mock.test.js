@@ -47,4 +47,29 @@ describe("getMock", () => {
       age: expect.any(Number),
     });
   });
+
+  it("Handles nested properties", () => {
+    const mocks = getMock({
+      schema: readFileSync(
+        path.join(__dirname, "../resources/testSchema.graphql"),
+        "utf8"
+      ),
+      entity: "Person",
+      fields: ["name", "age", "car.name", "car.id", "car.colour.shade.name"],
+    });
+
+    expect(mocks).toStrictEqual({
+      name: expect.any(String),
+      age: expect.any(Number),
+      car: {
+        id: expect.any(Number),
+        name: expect.any(String),
+        colour: {
+          shade: {
+            name: expect.any(String),
+          },
+        },
+      },
+    });
+  });
 });
