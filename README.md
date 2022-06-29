@@ -9,7 +9,9 @@ Coming soon!
 ### Mock Data Generator
 
 ```
-$ node bin/sms-gen.js --help
+$ npm i @bitovi/stateful-mocks
+
+$ npx sms-gen --help
 Usage: sms-gen [options]
 
 CLI to generate mock data for an entity of a GraphQL schema

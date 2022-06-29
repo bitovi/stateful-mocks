@@ -4,6 +4,10 @@
   "main": "index.js",
   "repository": "git@github.com:bitovi/stateful-mocks.git",
   "author": "Bitovi",
+  "bugs": {
+    "url": "https://github.com/bitovi/stateful-mocks/issues"
+  },
+  "homepage": "https://www.bitovi.com/nodejs",
   "license": "MIT",
   "bin": {
     "sms-gen": "bin/sms-gen.js"
