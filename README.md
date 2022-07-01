@@ -9,17 +9,20 @@ Coming soon!
 ### Mock Data Generator
 
 ```
-$ node bin/sms-gen.js --help
-Usage: sms-gen [options]
+$ node bin/cli.js help
+Usage: sms [options] [command]
 
-CLI to generate mock data for an entity of a GraphQL schema
+CLI for the stateful mocks server(sms)
 
 Options:
-  -V, --version      output the version number
-  --schema <path>    path to GraphQL schema
-  --entity <name>    Entity to generate mock data for
-  --fields <fields>  Comma-separated list of fields to mock
-  -h, --help         display help for command
+  -V, --version   output the version number
+  -h, --help      display help for command
+
+Commands:
+  gen [options]   CLI to generate mock data for an entity
+                  of a GraphQL schema
+  run [options]   CLI to run mock server
+  help [command]  display help for command
 ```
 
 ## Releasing a new version
