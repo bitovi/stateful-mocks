@@ -1,12 +1,16 @@
 {
   "name": "@bitovi/stateful-mocks",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "index.js",
   "repository": "git@github.com:bitovi/stateful-mocks.git",
   "author": "Bitovi",
+  "bugs": {
+    "url": "https://github.com/bitovi/stateful-mocks/issues"
+  },
+  "homepage": "https://www.bitovi.com/nodejs",
   "license": "MIT",
   "bin": {
-    "cli": "bin/cli.js"
+    "sms": "bin/cli.js"
   },
   "scripts": {
     "start:dev": "nodemon src/server.js 4000",

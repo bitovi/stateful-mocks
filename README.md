@@ -9,8 +9,10 @@ Coming soon!
 ### Mock Data Generator
 
 ```
-$ node bin/cli.js help
-Usage: sms [options] [command]
+$ npm i @bitovi/stateful-mocks
+
+$ npx sms --help
+Usage: gen [options]
 
 CLI for the stateful mocks server(sms)
 

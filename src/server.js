@@ -1,49 +1,50 @@
-const fs = require('fs')
-const path = require('path')
-const { ApolloServer } = require('apollo-server')
-const { parse } = require('graphql')
+const fs = require("fs");
+const path = require("path");
+const { ApolloServer } = require("apollo-server");
+const { parse } = require("graphql");
 
-const { getEntityInstance } = require('./utils/stateMachine')
-const { generateControllersFromConfig } = require('./utils/stateController')
+const { getEntityInstance } = require("./utils/stateMachine");
+const { generateControllersFromConfig } = require("./utils/stateController");
 
-const { port, configFilePath, schemaFilePath } = JSON.parse(process.argv[2])
+const { port, configFilePath, schemaFilePath } = JSON.parse(process.argv[2]);
 
-const config = require(configFilePath)
-const { requests } = config
-const typeDefs = fs.readFileSync(path.join(__dirname, schemaFilePath), 'utf8')
+const config = require(configFilePath);
+const { requests } = config;
+const typeDefs = fs.readFileSync(path.join(__dirname, schemaFilePath), "utf8");
 
 //TODO: Improve the name of this constant, and many more. We need a consistent nomeclature for our objects/props
-const stateController = generateControllersFromConfig(config)
+const stateController = generateControllersFromConfig(config);
 
 //TODO: Abstratic this into a function that can support multiple server types (graphql/rest) and returns "serve()" method
 const resolvers = requests.reduce(
   (resolvers, request) => {
-    const parsed = parse(JSON.parse(request.body).query)
+    const parsed = parse(JSON.parse(request.body).query);
 
-    const definition = parsed.definitions[0]
-    const queryOrMutationName = definition.selectionSet.selections[0].name.value
+    const definition = parsed.definitions[0];
+    const queryOrMutationName =
+      definition.selectionSet.selections[0].name.value;
 
     switch (definition.operation) {
-      case 'query':
+      case "query":
         return {
           ...resolvers,
           Query: {
             ...resolvers.Query,
             [queryOrMutationName]() {
               // TODO - compare request.variables
-              const { entity, id } = request.response
+              const { entity, id } = request.response;
 
               const entityInstance = getEntityInstance(
                 stateController,
                 entity,
                 id
-              )
+              );
 
-              return entityInstance.getCurrentStateData()
+              return entityInstance.getCurrentStateData();
             },
           },
-        }
-      case 'mutation':
+        };
+      case "mutation":
         return {
           ...resolvers,
           Mutation: {
@@ -55,31 +56,31 @@ const resolvers = requests.reduce(
                   stateController,
                   entity,
                   id
-                )
+                );
 
-                entityInstance.send(event)
-              })
+                entityInstance.send(event);
+              });
 
-              const { id, entity, state } = request.response
+              const { id, entity, state } = request.response;
               const entityInstance = getEntityInstance(
                 stateController,
                 entity,
                 id
-              )
+              );
 
-              return entityInstance.getStateData(state)
+              return entityInstance.getStateData(state);
             },
           },
-        }
+        };
     }
 
-    return resolvers
+    return resolvers;
   },
   { Query: {}, Mutation: {} }
-)
+);
 
-const server = new ApolloServer({ typeDefs, resolvers })
+const server = new ApolloServer({ typeDefs, resolvers });
 
 server.listen({ port }).then(({ url }) => {
-  console.log(`{ "status": "listening", "url": "${url}" }`)
-})
+  console.log(`{ "status": "listening", "url": "${url}" }`);
+});
