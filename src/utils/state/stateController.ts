@@ -1,6 +1,7 @@
-const { StateMachine } = require("./stateMachine.js");
+import { StateController } from '../../interfaces/state';
+import { StateMachine } from './stateMachine';
 
-function generateControllersFromConfig({ entities }) {
+export function generateControllers(entities): Array<StateController> {
   return Object.keys(entities).map((key) => {
     const instances = Object.keys(entities[key].instances).map((instanceId) => {
       const { statesData } = entities[key].instances[instanceId];
@@ -15,5 +16,3 @@ function generateControllersFromConfig({ entities }) {
     return { entity: key, instances };
   });
 }
-
-module.exports = { generateControllersFromConfig };

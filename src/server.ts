@@ -7,8 +7,8 @@ import fs from 'fs';
 import path from 'path';
 import { DocumentNode, parse } from 'graphql';
 
-import { generateControllersFromConfig } from './utils/stateController';
-import { getEntityInstance } from './utils/stateMachine';
+import { generateControllers } from './utils/state/stateController';
+import { getEntityInstance } from './utils/state/stateMachine';
 
 // TODO - pass these as an argument
 const configFilePath = '../demo/config';
@@ -17,13 +17,14 @@ const [_, _cmd, port = 4000] = process.argv;
 
 export async function startApolloServer(port: number) {
   const config = require(configFilePath);
-  const { requests } = config;
+  const { requests, entities } = config;
+
   const typeDefs = fs.readFileSync(
     path.join(__dirname, schemaFilePath),
     'utf8'
   );
 
-  const stateControllers = generateControllersFromConfig(config);
+  const stateControllers = generateControllers(entities);
 
   const resolvers = requests.reduce(
     (resolvers, request) => {

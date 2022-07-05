@@ -1,6 +1,9 @@
-const { createMachine, interpret } = require("xstate");
+import { createMachine, interpret } from 'xstate';
 
-class StateMachine {
+export class StateMachine {
+  interpreter: any;
+  statesData: any;
+
   constructor(statesData, machine) {
     const _machine = createMachine(machine);
     this.interpreter = interpret(_machine).start();
@@ -25,13 +28,8 @@ class StateMachine {
   }
 }
 
-function getEntityInstance(controllers, entityType, instanceId) {
+export function getEntityInstance(controllers, entityType, instanceId) {
   return controllers
     .find((controller) => controller.entity === entityType)
     .instances.find((instance) => instance.id === instanceId).stateMachine;
 }
-
-module.exports = {
-  StateMachine,
-  getEntityInstance,
-};
