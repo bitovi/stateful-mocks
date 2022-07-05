@@ -3,26 +3,19 @@ import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
-import fs from 'fs';
-import path from 'path';
 import { DocumentNode, parse } from 'graphql';
 
 import { generateControllers } from './utils/state/stateController';
 import { getEntityInstance } from './utils/state/stateMachine';
+import { getConfig, getTypeDefs } from './utils/graphql';
 
-// TODO - pass these as an argument
-const configFilePath = '../demo/config';
-const schemaFilePath = '../demo/schema.graphql';
 const [_, _cmd, port = 4000] = process.argv;
 
 export async function startApolloServer(port: number) {
-  const config = require(configFilePath);
-  const { requests, entities } = config;
+  const config = getConfig();
+  const typeDefs = getTypeDefs();
 
-  const typeDefs = fs.readFileSync(
-    path.join(__dirname, schemaFilePath),
-    'utf8'
-  );
+  const { requests, entities } = config;
 
   const stateControllers = generateControllers(entities);
 
