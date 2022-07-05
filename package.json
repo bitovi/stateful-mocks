@@ -13,7 +13,7 @@
     "sms-gen": "bin/sms-gen.js"
   },
   "scripts": {
-    "start:dev": "nodemon src/server.js 4000",
+    "start:dev": "nodemon src/server.ts 4000",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:verbose": "jest --watch --verbose",
