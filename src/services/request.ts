@@ -5,15 +5,17 @@ import { getRequestName } from '../utils/graphql/request';
 import { getEntityInstance } from '../utils/state/stateMachine';
 import { getResponseData } from './getResponseData';
 
+const getRequestFromConfig = (operationName: string) => {
+  const { requests } = getConfig();
+
+  return requests.find((request) => getRequestName(request) === operationName);
+};
+
 export const executeQuery = (
   operationName: string,
   stateController: Array<StateController>
 ) => {
-  const { requests } = getConfig();
-
-  const request = requests.find(
-    (request) => getRequestName(request) === operationName
-  );
+  const request = getRequestFromConfig(operationName);
 
   if (!request) {
     throw new ServerError(
@@ -28,11 +30,7 @@ export const executeMutation = (
   operationName: string,
   stateController: Array<StateController>
 ) => {
-  const { requests } = getConfig();
-
-  const request = requests.find(
-    (request) => getRequestName(request) === operationName
-  );
+  const request = getRequestFromConfig(operationName);
 
   if (!request) {
     throw new ServerError(
