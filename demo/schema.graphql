@@ -5,6 +5,7 @@ type Person {
 
 type Query {
   personByName(name: String): Person
+  people: [Person]
 }
 
 input CreatePersonInput {

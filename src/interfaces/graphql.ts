@@ -12,7 +12,7 @@ export interface StateChangesDefinition {
 
 export interface ConfigRequest {
   body: string;
-  response: ResponseDefinition /* | Array<ResponseDefinition> */;
+  response: ResponseDefinition | Array<ResponseDefinition>;
   stateChanges: Array<StateChangesDefinition>;
 }
 
