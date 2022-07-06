@@ -1,18 +1,18 @@
-const { parse, buildSchema } = require("graphql");
-const { createMockStore } = require("@graphql-tools/mock");
-const casual = require("casual");
+const { parse, buildSchema } = require('graphql');
+const { createMockStore } = require('@graphql-tools/mock');
+const casual = require('casual');
 
 const generateData = ({ name, type }) => {
   switch (type) {
-    case "String":
+    case 'String':
       name = casual[name] || casual.word;
       break;
 
-    case "Int":
+    case 'Int':
       name = casual[name] || casual.integer(1, 100);
       break;
 
-    case "Float":
+    case 'Float':
       name = casual[name] || casual.double(1, 100);
       break;
   }
@@ -23,16 +23,16 @@ const generateData = ({ name, type }) => {
 const getMocks = ({ ast }) => {
   return ast.definitions.reduce((mocks, def) => {
     const isTypeDef =
-      def.kind === "ObjectTypeDefinition" &&
-      def.name.value !== "Query" &&
-      def.name.value !== "Mutation";
+      def.kind === 'ObjectTypeDefinition' &&
+      def.name.value !== 'Query' &&
+      def.name.value !== 'Mutation';
 
     if (isTypeDef) {
       const mockFields = def.fields.reduce((mockFields, field) => {
         const name = field.name.value;
         const type = field.type.type?.name.value;
 
-        if (field.kind === "FieldDefinition" && type) {
+        if (field.kind === 'FieldDefinition' && type) {
           mockFields[name] = () => generateData({ name, type });
         }
 
@@ -55,7 +55,7 @@ const merge = (a, b) => {
     if (!bKeys.includes(key)) {
       merged[key] = a[key];
     } else {
-      if (typeof a[key] === "object") {
+      if (typeof a[key] === 'object') {
         merged[key] = merge(a[key], b[key]);
       }
     }
@@ -97,7 +97,7 @@ const getAllFieldsForEntity = ({ entity, ast }) => {
 
   return fields.reduce((fields, field) => {
     const nestedFields =
-      field.type.kind === "NamedType"
+      field.type.kind === 'NamedType'
         ? getAllFieldsForEntity({ entity: field.type.name.value, ast }).map(
             (nestedField) => `${field.name.value}.${nestedField}`
           )
@@ -107,7 +107,8 @@ const getAllFieldsForEntity = ({ entity, ast }) => {
   }, []);
 };
 
-const getMock = ({ schema, entity, fields }) => {
+const getMock = ({ schema, entity, ...rest }) => {
+  let fields = rest.fields;
   const key = Math.random();
 
   const ast = parse(schema);
@@ -121,7 +122,7 @@ const getMock = ({ schema, entity, fields }) => {
   }
 
   return fields.reduce((data, field) => {
-    const splitField = field.split(".");
+    const splitField = field.split('.');
 
     return {
       ...data,

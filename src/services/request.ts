@@ -1,4 +1,5 @@
 import { ServerError } from '../errors/serverError';
+import { ConfigRequest } from '../interfaces/graphql';
 import { StateController } from '../interfaces/state';
 import { getConfig } from '../utils/graphql';
 import { getRequestName } from '../utils/graphql/request';
@@ -9,6 +10,14 @@ const getRequestFromConfig = (operationName: string) => {
   const { requests } = getConfig();
 
   return requests.find((request) => getRequestName(request) === operationName);
+};
+
+export const getConfigRequestsNames = (requests: Array<ConfigRequest>) => {
+  return requests.reduce((resolvers, request) => {
+    const queryName = getRequestName(request);
+
+    return [...resolvers, queryName];
+  }, []);
 };
 
 export const executeQuery = (
@@ -40,9 +49,11 @@ export const executeMutation = (
 
   const { response, stateChanges } = request;
 
-  stateChanges.forEach(({ id, event, entity }) => {
-    getEntityInstance(stateController, entity, id).send(event);
-  });
+  if (stateChanges) {
+    stateChanges.forEach(({ id, event, entity }) => {
+      getEntityInstance(stateController, entity, id).send(event);
+    });
+  }
 
   return getResponseData(response, stateController);
 };

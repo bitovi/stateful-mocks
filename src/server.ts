@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 import { generateControllers } from './utils/state/stateController';
 import { getConfig, getTypeDefs } from './utils/graphql';
 import { buildResolvers } from './utils/graphql/resolvers';
+import { interceptNewRequest } from './middlewares/interceptNewRequest';
 
 const [_, _cmd, port = 4000] = process.argv;
 
@@ -33,6 +34,7 @@ export async function startApolloServer(port: number) {
   await server.start();
 
   app.use(bodyParser.json());
+  app.use(interceptNewRequest);
 
   server.applyMiddleware({ app });
   await new Promise((resolve: any) => httpServer.listen({ port }, resolve));

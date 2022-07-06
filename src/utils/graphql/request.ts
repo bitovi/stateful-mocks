@@ -3,7 +3,7 @@ import { ConfigRequest } from '../../interfaces/graphql';
 
 //todo: check in next standup: I think the return type from parse set by graphql may be mistaken; it's probably OperationDefinitionNode in some cases
 const getParsedQuery = (request: ConfigRequest): any => {
-  return parse(JSON.parse(request.body).query);
+  return parse(JSON.parse(String(request.body)).query);
 };
 
 export const getRequestName = (request): string => {

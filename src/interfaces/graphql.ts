@@ -10,10 +10,11 @@ export interface StateChangesDefinition {
   entity: string;
 }
 
+//todo: correct type is GraphqlRequestBody, but sometimes will also be a string. Need two interfaces.
 export interface ConfigRequest {
-  body: string;
+  body: any;
   response: ResponseDefinition | Array<ResponseDefinition>;
-  stateChanges: Array<StateChangesDefinition>;
+  stateChanges?: Array<StateChangesDefinition>;
 }
 
 //todo: find correct type for query or generate with tool
