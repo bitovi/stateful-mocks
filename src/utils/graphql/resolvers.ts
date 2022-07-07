@@ -1,7 +1,7 @@
-import { ConfigRequest } from '../../interfaces/graphql';
-import { StateController } from '../../interfaces/state';
-import { executeMutation, executeQuery } from '../../services/request';
-import { getRequestName, getRequestType } from './request';
+import { ConfigRequest } from "../../interfaces/graphql";
+import { StateController } from "../../interfaces/state";
+import { executeMutation, executeQuery } from "../../services/request";
+import { getRequestName, getRequestType } from "./request";
 
 export const buildResolvers = (
   requests: Array<ConfigRequest>,
@@ -13,7 +13,7 @@ export const buildResolvers = (
       const operationType = getRequestType(request);
 
       switch (operationType) {
-        case 'query':
+        case "query":
           return {
             ...resolvers,
             Query: {
@@ -23,7 +23,7 @@ export const buildResolvers = (
               },
             },
           };
-        case 'mutation':
+        case "mutation":
           return {
             ...resolvers,
             Mutation: {

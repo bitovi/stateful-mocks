@@ -1,5 +1,5 @@
-import { StateController } from '../../interfaces/state';
-import { StateMachine } from './stateMachine';
+import { StateController } from "../../interfaces/state";
+import { StateMachine } from "./stateMachine";
 
 export function generateControllers(entities): Array<StateController> {
   return Object.keys(entities).map((key) => {

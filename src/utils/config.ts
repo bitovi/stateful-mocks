@@ -1,12 +1,12 @@
-import casual from 'casual';
-import fs from 'fs';
-import { parse } from 'graphql';
-import { request } from 'http';
-import { ServerError } from '../errors/serverError';
-import { getMock } from '../generator';
-import { ConfigRequest, GraphqlRequestBody } from '../interfaces/graphql';
-import { getConfig, getTypeDefs } from './graphql';
-import { getRequestName, getRequestType } from './graphql/request';
+import casual from "casual";
+import fs from "fs";
+import { parse } from "graphql";
+import { request } from "http";
+import { ServerError } from "../errors/serverError";
+import { getMock } from "../generator";
+import { ConfigRequest, GraphqlRequestBody } from "../interfaces/graphql";
+import { getConfig, getTypeDefs } from "./graphql";
+import { getRequestName, getRequestType } from "./graphql/request";
 
 //todo: find type for schema
 const getEntityName = (
@@ -63,7 +63,7 @@ export const updateConfig = (
       },
     };
 
-    if (requestType === 'mutation') {
+    if (requestType === "mutation") {
       newRequest.stateChanges = [
         {
           id: entityInstance,
@@ -117,7 +117,7 @@ export const updateConfig = (
       },
     };
 
-    if (requestType === 'mutation') {
+    if (requestType === "mutation") {
       newRequest.stateChanges = [
         {
           id: entityInstance,
@@ -137,7 +137,7 @@ export const updateConfig = (
 
 const writeNewConfig = (config) => {
   fs.writeFile(
-    'demo/config.json',
+    "demo/config.json",
     JSON.stringify(config, null, 3),
     function writeJSON(err) {
       if (err) {

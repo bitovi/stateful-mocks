@@ -1,5 +1,5 @@
-import { parse } from 'graphql';
-import { ConfigRequest } from '../../interfaces/graphql';
+import { parse } from "graphql";
+import { ConfigRequest } from "../../interfaces/graphql";
 
 //todo: check in next standup: I think the return type from parse set by graphql may be mistaken; it's probably OperationDefinitionNode in some cases
 const getParsedQuery = (request: ConfigRequest): any => {
