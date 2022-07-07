@@ -10,7 +10,7 @@
   "homepage": "https://www.bitovi.com/nodejs",
   "license": "MIT",
   "bin": {
-    "sms-gen": "bin/sms-gen.js"
+    "sms": "bin/cli.js"
   },
   "scripts": {
     "start:dev": "nodemon src/server.ts 4000",
