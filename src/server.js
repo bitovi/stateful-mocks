@@ -6,10 +6,7 @@ const { parse } = require("graphql");
 const { getEntityInstance } = require("./utils/stateMachine");
 const { generateControllersFromConfig } = require("./utils/stateController");
 
-// TODO - pass these as an argument
-const configFilePath = "../demo/config";
-const schemaFilePath = "../demo/schema.graphql";
-const [_, _cmd, port = 4000] = process.argv;
+const { port, configFilePath, schemaFilePath } = JSON.parse(process.argv[2]);
 
 const config = require(configFilePath);
 const { requests } = config;
