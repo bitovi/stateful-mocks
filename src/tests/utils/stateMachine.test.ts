@@ -1,4 +1,4 @@
-const { getEntityInstance } = require("../../utils/stateMachine");
+import { getEntityInstance } from "../../utils/state/stateMachine";
 
 //TODO: Move mocks into separate file
 const mockStateMachineParams = () => ({

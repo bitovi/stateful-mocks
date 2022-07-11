@@ -107,7 +107,8 @@ const getAllFieldsForEntity = ({ entity, ast }) => {
   }, []);
 };
 
-const getMock = ({ schema, entity, fields }) => {
+const getMock = ({ schema, entity, ...rest }) => {
+  let fields = rest.fields;
   const key = Math.random();
 
   const ast = parse(schema);
