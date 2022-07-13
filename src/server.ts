@@ -1,12 +1,12 @@
-import { ApolloServer } from 'apollo-server-express';
-import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
-import express from 'express';
-import http from 'http';
-import bodyParser from 'body-parser';
+import { ApolloServer } from "apollo-server-express";
+import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
+import express from "express";
+import http from "http";
+import bodyParser from "body-parser";
 
-import { getTypeDefs } from './utils/graphql';
-import { buildResolvers } from './utils/graphql/resolvers';
-import { interceptNewRequest } from './middlewares/interceptNewRequest';
+import { getTypeDefs } from "./utils/graphql";
+import { buildResolvers } from "./utils/graphql/resolvers";
+import { interceptNewRequest } from "./middlewares/interceptNewRequest";
 
 const [_, _cmd, port = 4000] = process.argv;
 
@@ -21,7 +21,7 @@ export async function startApolloServer(port: number) {
     typeDefs,
     resolvers,
     csrfPrevention: true,
-    cache: 'bounded',
+    cache: "bounded",
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 

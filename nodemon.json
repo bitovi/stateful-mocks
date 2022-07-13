@@ -1,5 +1,3 @@
 {
-  "ignore": [
-    "config.json"
-  ]
+  "ignore": ["config.json"]
 }

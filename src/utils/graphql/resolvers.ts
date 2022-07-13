@@ -1,6 +1,6 @@
-import { getSupportedRequests } from '.';
-import { RequestSpecifications } from '../../interfaces/graphql';
-import { executeMutation, executeQuery } from '../../services/request';
+import { getSupportedRequests } from ".";
+import { RequestSpecifications } from "../../interfaces/graphql";
+import { executeMutation, executeQuery } from "../../services/request";
 
 export const buildResolvers = () => {
   const supportedRequests: Array<RequestSpecifications> =
@@ -11,7 +11,7 @@ export const buildResolvers = () => {
       const { name, type } = request;
 
       switch (type) {
-        case 'Query':
+        case "Query":
           return {
             ...resolvers,
             Query: {
@@ -21,7 +21,7 @@ export const buildResolvers = () => {
               },
             },
           };
-        case 'Mutation':
+        case "Mutation":
           return {
             ...resolvers,
             Mutation: {

@@ -1,8 +1,8 @@
-import { parse } from 'graphql';
-import { RequestSpecifications } from '../interfaces/graphql';
-import { getConfigRequestsNames } from '../services/request';
-import { updateConfig } from '../utils/config';
-import { getConfig, getSupportedRequests } from '../utils/graphql';
+import { parse } from "graphql";
+import { RequestSpecifications } from "../interfaces/graphql";
+import { getConfigRequestsNames } from "../services/request";
+import { updateConfig } from "../utils/config";
+import { getConfig, getSupportedRequests } from "../utils/graphql";
 
 export const interceptNewRequest = (request, _response, next) => {
   if (request.body.query) {
