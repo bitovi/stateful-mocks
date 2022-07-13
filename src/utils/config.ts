@@ -1,12 +1,10 @@
-import casual from "casual";
-import fs from "fs";
-import { parse } from "graphql";
-import { request } from "http";
-import { ServerError } from "../errors/serverError";
-import { getMock } from "../generator";
-import { ConfigRequest, GraphqlRequestBody } from "../interfaces/graphql";
-import { getConfig, getTypeDefs } from "./graphql";
-import { getRequestName, getRequestType } from "./graphql/request";
+import casual from 'casual';
+import fs from 'fs';
+import { parse } from 'graphql';
+import { ServerError } from '../errors/serverError';
+import { getMock } from '../generator';
+import { ConfigRequest } from '../interfaces/graphql';
+import { getConfig, getTypeDefs } from './graphql';
 
 //todo: find type for schema
 const getEntityName = (
@@ -26,15 +24,6 @@ const getEntityName = (
   return typeDefinition.type.name.value;
 };
 
-const getRequestFields = ({ body }: ConfigRequest) => {
-  //todo: find type for definition
-  const definition: any = parse(String(body.query)).definitions[0];
-
-  return definition.selectionSet.selections[0].selectionSet.selections.map(
-    (field) => field.name.value
-  );
-};
-
 export const updateConfig = (
   request: ConfigRequest,
   requestName: string,
@@ -45,6 +34,7 @@ export const updateConfig = (
   const schema = getTypeDefs();
 
   const entity = getEntityName(requestName, requestType, schema);
+
   const [entityInstance] = Object.keys(entities[entity]?.instances ?? {});
 
   //todo: refactor; this is quite crude
@@ -63,11 +53,11 @@ export const updateConfig = (
       },
     };
 
-    if (requestType === "mutation") {
+    if (requestType === 'mutation') {
       newRequest.stateChanges = [
         {
           id: entityInstance,
-          event: casual.word,
+          event: requestName,
           entity,
         },
       ];
@@ -117,11 +107,11 @@ export const updateConfig = (
       },
     };
 
-    if (requestType === "mutation") {
+    if (requestType === 'mutation') {
       newRequest.stateChanges = [
         {
           id: entityInstance,
-          event: casual.word,
+          event: requestName,
           entity,
         },
       ];
@@ -137,7 +127,7 @@ export const updateConfig = (
 
 const writeNewConfig = (config) => {
   fs.writeFile(
-    "demo/config.json",
+    'demo/config.json',
     JSON.stringify(config, null, 3),
     function writeJSON(err) {
       if (err) {

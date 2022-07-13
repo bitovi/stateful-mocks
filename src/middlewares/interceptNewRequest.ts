@@ -1,7 +1,7 @@
-import { parse } from "graphql";
-import { getConfigRequestsNames } from "../services/request";
-import { updateConfig } from "../utils/config";
-import { getConfig, getSupportedRequests } from "../utils/graphql";
+import { parse } from 'graphql';
+import { getConfigRequestsNames } from '../services/request';
+import { updateConfig } from '../utils/config';
+import { getConfig, getSupportedRequests } from '../utils/graphql';
 
 export const interceptNewRequest = (request, _response, next) => {
   if (request.body.query) {
@@ -12,12 +12,14 @@ export const interceptNewRequest = (request, _response, next) => {
     const requestType = parsedQuery.definitions[0].operation;
 
     const supportedRequests: any = getSupportedRequests();
-
     const { requests } = getConfig();
     const requestsNames = getConfigRequestsNames(requests);
     const isNewRequest = !requestsNames.includes(requestName);
 
-    if (supportedRequests.includes(requestName) && isNewRequest) {
+    if (
+      supportedRequests.some((request) => request.name === requestName) &&
+      isNewRequest
+    ) {
       updateConfig(request, requestName, requestType);
     }
   }
