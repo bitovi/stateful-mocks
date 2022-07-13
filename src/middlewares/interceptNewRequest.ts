@@ -1,4 +1,5 @@
 import { parse } from 'graphql';
+import { RequestSpecifications } from '../interfaces/graphql';
 import { getConfigRequestsNames } from '../services/request';
 import { updateConfig } from '../utils/config';
 import { getConfig, getSupportedRequests } from '../utils/graphql';
@@ -11,7 +12,9 @@ export const interceptNewRequest = (request, _response, next) => {
       parsedQuery.definitions[0].selectionSet.selections[0].name.value;
     const requestType = parsedQuery.definitions[0].operation;
 
-    const supportedRequests: any = getSupportedRequests();
+    const supportedRequests: Array<RequestSpecifications> =
+      getSupportedRequests();
+
     const { requests } = getConfig();
     const requestsNames = getConfigRequestsNames(requests);
     const isNewRequest = !requestsNames.includes(requestName);

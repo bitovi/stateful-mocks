@@ -39,3 +39,8 @@ export interface Config {
   entities: { [key: string]: Entity };
   requests: Array<ConfigRequest>;
 }
+
+export interface RequestSpecifications {
+  name: string;
+  type: string;
+}

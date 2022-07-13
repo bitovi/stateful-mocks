@@ -1,12 +1,10 @@
 import { getSupportedRequests } from '.';
+import { RequestSpecifications } from '../../interfaces/graphql';
 import { executeMutation, executeQuery } from '../../services/request';
 
-interface RequestDefinition {
-  name: string;
-  type: string;
-}
 export const buildResolvers = () => {
-  const supportedRequests: Array<RequestDefinition> = getSupportedRequests();
+  const supportedRequests: Array<RequestSpecifications> =
+    getSupportedRequests();
 
   return supportedRequests.reduce(
     (resolvers, request) => {

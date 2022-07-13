@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { parse } from 'graphql';
-import { Config } from '../../interfaces/graphql';
+import { Config, RequestSpecifications } from '../../interfaces/graphql';
 
 import { CONFIG_FILE_PATH, SCHEMA_FILE_PATH } from './constants';
 
@@ -12,7 +12,7 @@ export const getConfig = (): Config => {
   return require(CONFIG_FILE_PATH) as unknown as Config;
 };
 
-export const getSupportedRequests = () => {
+export const getSupportedRequests = (): Array<RequestSpecifications> => {
   const typeDefs = getTypeDefs();
   const supportedRequests = parse(String(typeDefs))
     .definitions.map((definition: any) => {
