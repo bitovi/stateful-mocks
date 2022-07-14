@@ -1,8 +1,8 @@
 import { ServerError } from "../errors/serverError";
 import { ConfigRequest } from "../interfaces/graphql";
-import { StateController } from "../interfaces/state";
 import { getConfig } from "../utils/graphql";
 import { getRequestName } from "../utils/graphql/request";
+import { getControllers } from "../utils/state/stateController";
 import { getEntityInstance } from "../utils/state/stateMachine";
 import { getResponseData } from "./getResponseData";
 
@@ -20,11 +20,10 @@ export const getConfigRequestsNames = (requests: Array<ConfigRequest>) => {
   }, []);
 };
 
-export const executeQuery = (
-  operationName: string,
-  stateController: Array<StateController>
-) => {
+export const executeQuery = (operationName: string) => {
   const request = getRequestFromConfig(operationName);
+  const { entities } = getConfig();
+  const stateController = getControllers(entities);
 
   if (!request) {
     throw new ServerError(
@@ -35,11 +34,10 @@ export const executeQuery = (
   return getResponseData(request.response, stateController);
 };
 
-export const executeMutation = (
-  operationName: string,
-  stateController: Array<StateController>
-) => {
+export const executeMutation = (operationName: string) => {
   const request = getRequestFromConfig(operationName);
+  const { entities } = getConfig();
+  const stateController = getControllers(entities);
 
   if (!request) {
     throw new ServerError(
@@ -54,6 +52,5 @@ export const executeMutation = (
       getEntityInstance(stateController, entity, id).send(event);
     });
   }
-
   return getResponseData(response, stateController);
 };

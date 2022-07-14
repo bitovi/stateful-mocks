@@ -1,35 +1,33 @@
-import { ConfigRequest } from "../../interfaces/graphql";
-import { StateController } from "../../interfaces/state";
+import { getSupportedRequests } from ".";
+import { RequestSpecifications } from "../../interfaces/graphql";
 import { executeMutation, executeQuery } from "../../services/request";
-import { getRequestName, getRequestType } from "./request";
 
-export const buildResolvers = (
-  requests: Array<ConfigRequest>,
-  stateControllers: Array<StateController>
-) => {
-  return requests.reduce(
+export const buildResolvers = () => {
+  const supportedRequests: Array<RequestSpecifications> =
+    getSupportedRequests();
+
+  return supportedRequests.reduce(
     (resolvers, request) => {
-      const operationName = getRequestName(request);
-      const operationType = getRequestType(request);
+      const { name, type } = request;
 
-      switch (operationType) {
-        case "query":
+      switch (type) {
+        case "Query":
           return {
             ...resolvers,
             Query: {
               ...resolvers.Query,
-              [operationName]() {
-                return executeQuery(operationName, stateControllers);
+              [name]() {
+                return executeQuery(name);
               },
             },
           };
-        case "mutation":
+        case "Mutation":
           return {
             ...resolvers,
             Mutation: {
               ...resolvers.Mutation,
-              [operationName]() {
-                return executeMutation(operationName, stateControllers);
+              [name]() {
+                return executeMutation(name);
               },
             },
           };
