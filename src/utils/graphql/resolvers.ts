@@ -2,9 +2,9 @@ import { getSupportedRequests } from ".";
 import { RequestSpecifications } from "../../interfaces/graphql";
 import { executeMutation, executeQuery } from "../../services/request";
 
-export const buildResolvers = () => {
+export const buildResolvers = (configFilePath:string, schemaFilePath: string) => {
   const supportedRequests: Array<RequestSpecifications> =
-    getSupportedRequests();
+    getSupportedRequests(schemaFilePath);
 
   return supportedRequests.reduce(
     (resolvers, request) => {
@@ -17,7 +17,7 @@ export const buildResolvers = () => {
             Query: {
               ...resolvers.Query,
               [name]() {
-                return executeQuery(name);
+                return executeQuery(name, configFilePath);
               },
             },
           };
@@ -27,7 +27,7 @@ export const buildResolvers = () => {
             Mutation: {
               ...resolvers.Mutation,
               [name]() {
-                return executeMutation(name);
+                return executeMutation(name, configFilePath);
               },
             },
           };

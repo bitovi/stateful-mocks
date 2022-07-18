@@ -6,8 +6,8 @@ import { getControllers } from "../utils/state/stateController";
 import { getEntityInstance } from "../utils/state/stateMachine";
 import { getResponseData } from "./getResponseData";
 
-const getRequestFromConfig = (operationName: string) => {
-  const { requests } = getConfig();
+const getRequestFromConfig = ( operationName: string, configFilePath: string) => {
+  const { requests } = getConfig(configFilePath);
 
   return requests.find((request) => getRequestName(request) === operationName);
 };
@@ -20,9 +20,9 @@ export const getConfigRequestsNames = (requests: Array<ConfigRequest>) => {
   }, []);
 };
 
-export const executeQuery = (operationName: string) => {
-  const request = getRequestFromConfig(operationName);
-  const { entities } = getConfig();
+export const executeQuery = (operationName: string, configFilePath: string) => {
+  const request = getRequestFromConfig( operationName, configFilePath);
+  const { entities } = getConfig(configFilePath);
   const stateController = getControllers(entities);
 
   if (!request) {
@@ -34,9 +34,9 @@ export const executeQuery = (operationName: string) => {
   return getResponseData(request.response, stateController);
 };
 
-export const executeMutation = (operationName: string) => {
-  const request = getRequestFromConfig(operationName);
-  const { entities } = getConfig();
+export const executeMutation = (operationName: string, configFilePath: string) => {
+  const request = getRequestFromConfig(operationName, configFilePath);
+  const { entities } = getConfig(configFilePath);
   const stateController = getControllers(entities);
 
   if (!request) {

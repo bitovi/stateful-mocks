@@ -27,11 +27,13 @@ const getEntityName = (
 export const updateConfig = (
   request: ConfigRequest,
   requestName: string,
-  requestType: string
+  requestType: string,
+  configFilePath: string,
+  schemaFilePath: string
 ) => {
-  const config = getConfig();
+  const config = getConfig(configFilePath);
   let { requests, entities } = config;
-  const schema = getTypeDefs();
+  const schema = getTypeDefs(schemaFilePath);
 
   const entity = getEntityName(requestName, requestType, schema);
 
@@ -122,12 +124,12 @@ export const updateConfig = (
   config.entities = entities;
   config.requests = requests;
 
-  writeNewConfig(config);
+  writeNewConfig(config, configFilePath);
 };
 
-const writeNewConfig = (config) => {
+  const writeNewConfig = (config, configFilePath: string) => {
   fs.writeFile(
-    "demo/config.json",
+    configFilePath,
     JSON.stringify(config, null, 3),
     function writeJSON(err) {
       if (err) {
@@ -136,3 +138,4 @@ const writeNewConfig = (config) => {
     }
   );
 };
+ 
