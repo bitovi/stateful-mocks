@@ -10,10 +10,14 @@ import { interceptNewRequest } from "./middlewares/interceptNewRequest";
 
 const [_, _cmd, port = 4000] = process.argv;
 
-export async function startApolloServer(port: number) {
-  const typeDefs = getTypeDefs();
+export async function startApolloServer(
+  configFilePath: string,
+  schemaFilePath: string,
+  port: number
+) {
+  const typeDefs = getTypeDefs(schemaFilePath);
 
-  const resolvers = buildResolvers();
+  const resolvers = buildResolvers(configFilePath, schemaFilePath);
 
   const app = express();
   const httpServer = http.createServer(app);
@@ -28,7 +32,10 @@ export async function startApolloServer(port: number) {
   await server.start();
 
   app.use(bodyParser.json());
-  app.use(interceptNewRequest);
+  app.use((request, response, next) => {
+    interceptNewRequest(request, response, configFilePath, schemaFilePath);
+    next();
+  });
 
   server.applyMiddleware({ app });
   await new Promise((resolve: any) => httpServer.listen({ port }, resolve));
@@ -38,4 +45,4 @@ export async function startApolloServer(port: number) {
   );
 }
 
-startApolloServer(Number(port));
+startApolloServer("demo/config.json", "demo/schema.graphql", Number(port));
