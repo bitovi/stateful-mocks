@@ -127,7 +127,7 @@ export const updateConfig = (
   writeNewConfig(config, configFilePath);
 };
 
-  const writeNewConfig = (config, configFilePath: string) => {
+const writeNewConfig = (config, configFilePath: string) => {
   fs.writeFile(
     configFilePath,
     JSON.stringify(config, null, 3),
@@ -138,4 +138,3 @@ export const updateConfig = (
     }
   );
 };
- 

@@ -1,16 +1,20 @@
 import { ApolloServer } from "apollo-server-express";
 import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
 import express from "express";
-import http  from "http";
+import http from "http";
 import bodyParser from "body-parser";
 
 import { getTypeDefs } from "./utils/graphql";
 import { buildResolvers } from "./utils/graphql/resolvers";
 import { interceptNewRequest } from "./middlewares/interceptNewRequest";
- 
+
 const [_, _cmd, port = 4000] = process.argv;
 
-export async function startApolloServer(configFilePath: string, schemaFilePath: string, port: number) {
+export async function startApolloServer(
+  configFilePath: string,
+  schemaFilePath: string,
+  port: number
+) {
   const typeDefs = getTypeDefs(schemaFilePath);
 
   const resolvers = buildResolvers(configFilePath, schemaFilePath);
@@ -29,8 +33,8 @@ export async function startApolloServer(configFilePath: string, schemaFilePath: 
 
   app.use(bodyParser.json());
   app.use((request, response, next) => {
-    interceptNewRequest(request, response, configFilePath, schemaFilePath)
-    next()
+    interceptNewRequest(request, response, configFilePath, schemaFilePath);
+    next();
   });
 
   server.applyMiddleware({ app });

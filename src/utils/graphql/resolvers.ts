@@ -2,7 +2,10 @@ import { getSupportedRequests } from ".";
 import { RequestSpecifications } from "../../interfaces/graphql";
 import { executeMutation, executeQuery } from "../../services/request";
 
-export const buildResolvers = (configFilePath:string, schemaFilePath: string) => {
+export const buildResolvers = (
+  configFilePath: string,
+  schemaFilePath: string
+) => {
   const supportedRequests: Array<RequestSpecifications> =
     getSupportedRequests(schemaFilePath);
 

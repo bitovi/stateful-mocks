@@ -4,7 +4,12 @@ import { getConfigRequestsNames } from "../services/request";
 import { updateConfig } from "../utils/config";
 import { getConfig, getSupportedRequests } from "../utils/graphql";
 
-export const interceptNewRequest = (request, _response, configFilePath, schemaFilePath) => {  
+export const interceptNewRequest = (
+  request,
+  _response,
+  configFilePath,
+  schemaFilePath
+) => {
   if (request.body.query) {
     const parsedQuery: any = parse(request.body.query);
     //todo: refactor this; see why my utils doesn't work
@@ -23,8 +28,13 @@ export const interceptNewRequest = (request, _response, configFilePath, schemaFi
       supportedRequests.some((request) => request.name === requestName) &&
       isNewRequest
     ) {
-      updateConfig(request, requestName, requestType, configFilePath, schemaFilePath);
+      updateConfig(
+        request,
+        requestName,
+        requestType,
+        configFilePath,
+        schemaFilePath
+      );
     }
   }
- 
 };
