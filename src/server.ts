@@ -8,8 +8,6 @@ import { getTypeDefs } from "./utils/graphql";
 import { buildResolvers } from "./utils/graphql/resolvers";
 import { interceptNewRequest } from "./middlewares/interceptNewRequest";
 
-const [_, _cmd, port = 4000] = process.argv;
-
 export async function startApolloServer(
   configFilePath: string,
   schemaFilePath: string,
@@ -44,5 +42,3 @@ export async function startApolloServer(
     `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
   );
 }
-
-startApolloServer("demo/config.json", "demo/schema.graphql", Number(port));

@@ -1,4 +1,4 @@
-const { spawn } = require("child_process");
+const { execSync } = require("child_process");
 const { readFileSync } = require("fs");
 const path = require("path");
 const { getMock } = require("../src/generator");
@@ -14,20 +14,10 @@ const gen = ({ schema: schemaFilePath, entity, fields }) => {
 };
 
 const run = ({ schema: schemaFilePath, config: configFilePath, port }) => {
-  console.info("Starting mock server...");
+  execSync("npm run build");
 
-  const child = spawn("node", [
-    "src/server.js",
-    JSON.stringify({ port, configFilePath, schemaFilePath }),
-  ]);
-
-  child.stdout.on("data", (data) => {
-    console.log(data.toString());
-  });
-
-  child.stderr.on("data", (data) => {
-    console.error(data.toString());
-  });
+  const { startApolloServer } = require("../dist/server");
+  startApolloServer(configFilePath, schemaFilePath, port);
 };
 
 module.exports = { gen, run };
