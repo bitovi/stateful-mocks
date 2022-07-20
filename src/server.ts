@@ -11,7 +11,7 @@ import { interceptNewRequest } from "./middlewares/interceptNewRequest";
 export async function startApolloServer(
   configFilePath: string,
   schemaFilePath: string,
-  port: number
+  port: number = 4000
 ) {
   const typeDefs = getTypeDefs(schemaFilePath);
 

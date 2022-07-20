@@ -1,4 +1,3 @@
-const { execSync } = require("child_process");
 const { readFileSync } = require("fs");
 const path = require("path");
 const { getMock } = require("../src/generator");
@@ -14,8 +13,6 @@ const gen = ({ schema: schemaFilePath, entity, fields }) => {
 };
 
 const run = ({ schema: schemaFilePath, config: configFilePath, port }) => {
-  execSync("npm run build");
-
   const { startApolloServer } = require("../dist/server");
   startApolloServer(configFilePath, schemaFilePath, port);
 };

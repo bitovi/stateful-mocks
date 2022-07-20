@@ -13,8 +13,9 @@
     "sms": "bin/cli.js"
   },
   "scripts": {
+    "build": "tsc",
     "start:dev": "nodemon src/server.ts 4000",
-    "start:prod": "nodemon dist/server.js 4000",
+    "cli:prod": "npm run build && node bin/cli.js -p 4000 -c demo/config.json -s demo/schema.graphql",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:verbose": "jest --watch --verbose",
@@ -22,10 +23,9 @@
     "lint:fix": "eslint --fix .",
     "pretty": "prettier --check .",
     "pretty:fix": "prettier --write .",
-    "release:major": "npm version major && git push && git push --tags",
-    "release:minor": "npm version minor && git push && git push --tags",
-    "release:patch": "npm version patch && git push && git push --tags",
-    "build": "tsc"
+    "release:major": "npm run build && npm version major && git push && git push --tags",
+    "release:minor": "npm run build && npm version minor && git push && git push --tags",
+    "release:patch": "npm run build && npm version patch && git push && git push --tags"
   },
   "devDependencies": {
     "@bitovi/eslint-config": "^1.0.1",
