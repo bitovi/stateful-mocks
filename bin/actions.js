@@ -18,4 +18,3 @@ const run = ({ schema: schemaFilePath, config: configFilePath, port }) => {
 };
 
 module.exports = { gen, run };
- 
