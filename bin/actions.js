@@ -1,6 +1,6 @@
 const { readFileSync } = require("fs");
 const path = require("path");
-const { getMock } = require("../src/generator");
+const { getMock } = require("../dist/generator");
 
 const gen = ({ schema: schemaFilePath, entity, fields }) => {
   const schema = readFileSync(path.join(process.cwd(), schemaFilePath), "utf8");
@@ -18,3 +18,4 @@ const run = ({ schema: schemaFilePath, config: configFilePath, port }) => {
 };
 
 module.exports = { gen, run };
+ 
