@@ -23,9 +23,10 @@
     "lint:fix": "eslint --fix .",
     "pretty": "prettier --check .",
     "pretty:fix": "prettier --write .",
-    "release:major": "npm run build && npm version major && git push && git push --tags",
-    "release:minor": "npm run build && npm version minor && git push && git push --tags",
-    "release:patch": "npm run build && npm version patch && git push && git push --tags"
+    "release:major": "npm version major && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
+    "release:patch": "npm version patch && git push && git push --tags",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@bitovi/eslint-config": "^1.0.1",
