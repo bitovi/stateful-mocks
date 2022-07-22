@@ -33,7 +33,6 @@ export const executeQuery = (operationName: string, configFilePath: string) => {
       `Couldn't find request ${operationName} in config.json`
     );
   }
-
   return getResponseData(request.response, stateController);
 };
 
