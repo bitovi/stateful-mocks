@@ -82,7 +82,6 @@ const getMockFieldsData = ({ typeFields, selectedFields, schema }) => {
       }
 
       if (getKind(field.type) === 'ListType') {
-        console.log('field =>', field)
         if (getKind(field.type) === 'NamedType') {
           if (!isScalarType(getNamedType(field.type))) {
             mockFields[name] = [
@@ -157,11 +156,6 @@ const getMock = ({ schema, entity, fields }) => {
 
       return selectFields
     }, {})
-
-  //   if (entity === 'Item') {
-  //     console.log('typeFields =>', typeFields)
-  //     console.log('fields =>', fields)
-  //   }
 
   const mocks = getMockFieldsData({ typeFields, selectedFields, schema })
 

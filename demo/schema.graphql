@@ -1,5 +1,6 @@
 type Test {
   text: String
+  textArr: [String]
   score: Int!
   item: Item
   requiredItem: Item!
