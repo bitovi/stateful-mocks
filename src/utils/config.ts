@@ -131,10 +131,32 @@ const writeNewConfig = (config, configFilePath: string) => {
   fs.writeFile(
     configFilePath,
     JSON.stringify(config, null, 3),
-    function writeJSON(err) {
-      if (err) {
+    function writeJSON(error) {
+      if (error) {
         throw new ServerError();
       }
     }
   );
+};
+
+export const validateConfig = (configFilePath: string): void => {
+  const absolutePath = `${process.cwd()}/${configFilePath}`;
+  const validPath = fs.existsSync(absolutePath);
+
+  if (!validPath) {
+    ensureFileDirectoryExits(configFilePath);
+    const config = {
+      entities: {},
+      requests: [],
+    };
+    writeNewConfig(config, configFilePath);
+  }
+};
+
+const ensureFileDirectoryExits = (filePath: string) => {
+  if (filePath.includes("/")) {
+    const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
+
+    fs.mkdirSync(directoriesPath, { recursive: true });
+  }
 };

@@ -7,14 +7,17 @@ import bodyParser from "body-parser";
 import { getTypeDefs } from "./utils/graphql";
 import { buildResolvers } from "./utils/graphql/resolvers";
 import { interceptNewRequest } from "./middlewares/interceptNewRequest";
+import { validateConfig } from "./utils/config";
 
 export async function startApolloServer(
   configFilePath: string,
   schemaFilePath: string,
   port: number = 4000
 ) {
-  const typeDefs = getTypeDefs(schemaFilePath);
+  //TODO: improve this name; we validate and write if no file exists
+  validateConfig(configFilePath);
 
+  const typeDefs = getTypeDefs(schemaFilePath);
   const resolvers = buildResolvers(configFilePath, schemaFilePath);
 
   const app = express();
