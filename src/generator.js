@@ -1,137 +1,171 @@
-const { parse, buildSchema } = require("graphql");
-const { createMockStore } = require("@graphql-tools/mock");
-const casual = require("casual");
+const { parse } = require('graphql')
+const casual = require('casual')
+
+/**
+ * Definitions - ['DirectiveDefinition', 'ObjectTypeDefinition', 'UnionTypeDefinition', 'InputObjectTypeDefinition', 'InterfaceTypeDefinition', 'EnumTypeDefinition', 'ScalarTypeDefinition']
+ * ObjectTypeDefinition kinds - [ 'NamedType', 'NonNullType', 'ListType' ]
+ * NamedType type names - [ 'String', 'ID', 'Boolean', 'Int', 'Float' ]
+ */
+
+const isScalarType = (type) =>
+  ['String', 'ID', 'Boolean', 'Int', 'Float'].includes(type)
 
 const generateData = ({ name, type }) => {
   switch (type) {
-    case "String":
-      name = casual[name] || casual.word;
-      break;
+    case 'String':
+      name = casual[name] || casual.word
+      break
 
-    case "Int":
-      name = casual[name] || casual.integer(1, 100);
-      break;
+    case 'Int':
+      name = casual[name] || casual.integer(1, 100)
+      break
 
-    case "Float":
-      name = casual[name] || casual.double(1, 100);
-      break;
+    case 'Float':
+      name = casual[name] || casual.double(1, 100)
+      break
   }
 
-  return name;
-};
+  return name
+}
 
-const getMocks = ({ ast }) => {
-  return ast.definitions.reduce((mocks, def) => {
-    const isTypeDef =
-      def.kind === "ObjectTypeDefinition" &&
-      def.name.value !== "Query" &&
-      def.name.value !== "Mutation";
+const getNamedType = (field) => {
+  if (
+    field.type.kind &&
+    ['NonNullType', 'ListType'].includes(field.type.kind)
+  ) {
+    return getNamedType(field.type)
+  }
 
-    if (isTypeDef) {
-      const mockFields = def.fields.reduce((mockFields, field) => {
-        const name = field.name.value;
-        const type = field.type.type?.name.value;
+  return field.type.name.value
+}
 
-        if (field.kind === "FieldDefinition" && type) {
-          mockFields[name] = () => generateData({ name, type });
+const getKind = (field) => {
+  if (field.type && field.type.type) {
+    return getNamedType(field.type)
+  }
+
+  return field.kind
+}
+
+const resolveNamedType = ({ mockFields, schema, name, field }) => {
+  const namedType = getNamedType(field)
+
+  if (!isScalarType(namedType)) {
+    mockFields[name] = getMock({
+      entity: namedType,
+      schema,
+    })
+  } else {
+    mockFields[name] = generateData({ name, type: namedType })
+  }
+
+  return mockFields
+}
+
+const resolveListOFNamedTypes = ({ mockFields, schema, name, field }) => {
+  return mockFields
+}
+
+const getMockFieldsData = ({ typeFields, selectedFields, schema }) => {
+  const data = typeFields.reduce((mockFields, field) => {
+    if (field.kind === 'FieldDefinition') {
+      const name = field.name.value
+      //   const type = field.type
+
+      if (['NonNullType', 'NamedType'].includes(getKind(field.type))) {
+        return resolveNamedType({
+          mockFields,
+          schema,
+          name,
+          field,
+        })
+      }
+
+      if (getKind(field.type) === 'ListType') {
+        console.log('field =>', field)
+        if (getKind(field.type) === 'NamedType') {
+          if (!isScalarType(getNamedType(field.type))) {
+            mockFields[name] = [
+              getMock({
+                entity: getNamedType(field.type),
+                schema,
+              }),
+              getMock({
+                entity: getNamedType(field.type),
+                schema,
+              }),
+            ]
+          } else {
+            mockFields[name] = generateData({
+              name,
+              type: getNamedType(field.type),
+            })
+          }
+        } else if (getKind(field.type) === 'NonNullType') {
+          if (!isScalarType(getNamedType(field.type))) {
+            mockFields[name] = [
+              getMock({
+                entity: getNamedType(field.type),
+                schema,
+              }),
+              getMock({
+                entity: getNamedType(field.type),
+                schema,
+              }),
+            ]
+          } else {
+            mockFields[name] = generateData({
+              name,
+              type: getNamedType(field.type),
+            })
+          }
         }
-
-        return mockFields;
-      }, {});
-
-      mocks[def.name.value] = mockFields;
-    }
-
-    return mocks;
-  }, {});
-};
-
-const merge = (a, b) => {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
-  const merged = {};
-
-  for (const key of aKeys) {
-    if (!bKeys.includes(key)) {
-      merged[key] = a[key];
-    } else {
-      if (typeof a[key] === "object") {
-        merged[key] = merge(a[key], b[key]);
       }
     }
-  }
 
-  for (const key of bKeys) {
-    if (!aKeys.includes(key)) {
-      merged[key] = b[key];
-    }
-  }
+    return mockFields
+  }, {})
 
-  return merged;
-};
+  return data
+}
 
-// turns { keys: [ 'foo', 'bar'], value: 'baz' }
-// into { foo: { bar: 'baz' } }
-// and
-// turns { keys: [ 'foo', 'bar'], value: 'baz', data: { foo: { abc: 'xyz' } } }
-// into { foo: { abc: 'xyz', bar: 'baz' } }
-const generateNestedObjectWithValue = ({ keys, value, data }) => {
-  const reversed = keys.reverse();
-
-  const newData = reversed.slice(1).reduce(
-    (newData, key) => {
-      return {
-        [key]: newData,
-      };
-    },
-    { [reversed[0]]: value }
-  );
-
-  return merge(data, newData);
-};
-
-const getAllFieldsForEntity = ({ entity, ast }) => {
-  const fields = ast.definitions.find(
-    (def) => def.name.value === entity
-  ).fields;
-
-  return fields.reduce((fields, field) => {
-    const nestedFields =
-      field.type.kind === "NamedType"
-        ? getAllFieldsForEntity({ entity: field.type.name.value, ast }).map(
-            (nestedField) => `${field.name.value}.${nestedField}`
-          )
-        : [field.name.value];
-
-    return [...fields, ...nestedFields];
-  }, []);
-};
+const resolveUnion = ({ ast, types }) =>
+  ast.definitions.find(
+    (def) =>
+      def.name.value ===
+      types[Math.floor(Math.random() * types.length)].name.value
+  ).fields
 
 const getMock = ({ schema, entity, fields }) => {
-  const key = Math.random();
+  const ast = parse(schema)
 
-  const ast = parse(schema);
-  const store = createMockStore({
-    schema: buildSchema(schema),
-    mocks: getMocks({ ast }),
-  });
+  const definition = ast.definitions.find((def) => def.name.value === entity)
 
-  if (!fields) {
-    fields = getAllFieldsForEntity({ entity, ast });
-  }
+  const typeFields =
+    definition.kind === 'UnionTypeDefinition'
+      ? resolveUnion({
+          ast,
+          types: definition.types,
+        })
+      : definition.fields
 
-  return fields.reduce((data, field) => {
-    const splitField = field.split(".");
+  // TODO - Cater for nested selection
+  const selectedFields =
+    fields &&
+    fields.reduce((selectFields, field) => {
+      selectFields[field] = 1
 
-    return {
-      ...data,
-      ...generateNestedObjectWithValue({
-        keys: splitField,
-        value: store.get(entity, key, splitField),
-        data,
-      }),
-    };
-  }, {});
-};
+      return selectFields
+    }, {})
 
-module.exports = { getMock };
+  //   if (entity === 'Item') {
+  //     console.log('typeFields =>', typeFields)
+  //     console.log('fields =>', fields)
+  //   }
+
+  const mocks = getMockFieldsData({ typeFields, selectedFields, schema })
+
+  return mocks
+}
+
+module.exports = { getMock }

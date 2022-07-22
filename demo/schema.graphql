@@ -1,3 +1,29 @@
+type Test {
+  text: String
+  score: Int!
+  item: Item
+  requiredItem: Item!
+  items: [Item]
+  requiredItems: [Item!]
+  requiredArrItems: [Item]!
+  required: [Item!]!
+  both: Items
+  # bothArr: [Items]
+  # bothRequiredArr: [Items!]
+  # bothArrRequired: [Items!]!
+}
+
+type Item {
+  name: String!
+  item1: Item1
+}
+
+type Item1 {
+  name: String!
+}
+
+union Items = Item | Item1
+
 type Person {
   name: String!
   age: Int!
