@@ -17,11 +17,38 @@ const getEntityName = (
   const typeDefinitions = schemaParsed.definitions.find(
     (definition) => definition.name.value.toLowerCase() === requestType
   );
-  const typeDefinition = typeDefinitions.fields.find(
+
+  const { type } = typeDefinitions.fields.find(
     (field) => field.name.value === requestName
   );
 
-  return typeDefinition.type.name.value;
+  if (type.kind === "ListType") {
+    return type.type.name.value;
+  } else {
+    return type.name.value;
+  }
+};
+
+export const isQueryList = (
+  requestName: string,
+  requestType: string,
+  schema: any
+) => {
+  const schemaParsed: any = parse(String(schema));
+
+  const typeDefinitions = schemaParsed.definitions.find(
+    (definition) => definition.name.value.toLowerCase() === requestType
+  );
+
+  const { type } = typeDefinitions.fields.find(
+    (field) => field.name.value === requestName
+  );
+
+  if (type.kind === "ListType") {
+    return true;
+  } else {
+    return false;
+  }
 };
 
 export const updateConfig = (
@@ -29,7 +56,8 @@ export const updateConfig = (
   requestName: string,
   requestType: string,
   configFilePath: string,
-  schemaFilePath: string
+  schemaFilePath: string,
+  isList: boolean
 ) => {
   const config = getConfig(configFilePath);
   let { requests, entities } = config;
@@ -44,15 +72,15 @@ export const updateConfig = (
     const [entityStates] = Object.keys(entities[entity].stateMachine.states);
 
     const body = JSON.stringify(request.body);
-
+    const response = {
+      id: entityInstance,
+      entity,
+      state: entityStates,
+    };
     //todo: refactor this; too similar logic
     let newRequest: ConfigRequest = {
       body,
-      response: {
-        id: entityInstance,
-        entity,
-        state: entityStates,
-      },
+      response: isList ? [response] : response,
     };
 
     if (requestType === "mutation") {
@@ -100,13 +128,15 @@ export const updateConfig = (
 
     const body = JSON.stringify(request.body);
 
+    const response = {
+      id: entityInstanceId,
+      entity,
+      state: initialState,
+    };
+
     let newRequest: ConfigRequest = {
       body,
-      response: {
-        id: entityInstanceId,
-        entity,
-        state: initialState,
-      },
+      response: isList ? [response] : response,
     };
 
     if (requestType === "mutation") {
