@@ -9,9 +9,9 @@ type Test {
   requiredArrItems: [Item]!
   required: [Item!]!
   both: Items
-  # bothArr: [Items]
-  # bothRequiredArr: [Items!]
-  # bothArrRequired: [Items!]!
+  bothArr: [Items]
+  bothRequiredArr: [Items!]
+  bothArrRequired: [Items!]!
 }
 
 type Item {

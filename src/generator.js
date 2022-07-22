@@ -1,165 +1,73 @@
-const { parse } = require('graphql')
-const casual = require('casual')
-
-/**
- * Definitions - ['DirectiveDefinition', 'ObjectTypeDefinition', 'UnionTypeDefinition', 'InputObjectTypeDefinition', 'InterfaceTypeDefinition', 'EnumTypeDefinition', 'ScalarTypeDefinition']
- * ObjectTypeDefinition kinds - [ 'NamedType', 'NonNullType', 'ListType' ]
- * NamedType type names - [ 'String', 'ID', 'Boolean', 'Int', 'Float' ]
- */
-
-const isScalarType = (type) =>
-  ['String', 'ID', 'Boolean', 'Int', 'Float'].includes(type)
+const { mockServer } = require("@graphql-tools/mock");
+const casual = require("casual");
+const { parse } = require("graphql");
 
 const generateData = ({ name, type }) => {
   switch (type) {
-    case 'String':
-      name = casual[name] || casual.word
-      break
+    case "string":
+      return casual[name] || casual.word;
 
-    case 'Int':
-      name = casual[name] || casual.integer(1, 100)
-      break
-
-    case 'Float':
-      name = casual[name] || casual.double(1, 100)
-      break
+    case "number":
+      return casual[name] || casual.integer(1, 100);
   }
 
-  return name
-}
+  return name;
+};
 
-const getNamedType = (field) => {
-  if (
-    field.type.kind &&
-    ['NonNullType', 'ListType'].includes(field.type.kind)
-  ) {
-    return getNamedType(field.type)
-  }
+const getMock = (data) => {
+  for (const fieldName in data) {
+    if (Array.isArray(data[fieldName])) {
+      data[fieldName] = data[fieldName].map((element) => {
+        const type = typeof element;
 
-  return field.type.name.value
-}
-
-const getKind = (field) => {
-  if (field.type && field.type.type) {
-    return getNamedType(field.type)
-  }
-
-  return field.kind
-}
-
-const resolveNamedType = ({ mockFields, schema, name, field }) => {
-  const namedType = getNamedType(field)
-
-  if (!isScalarType(namedType)) {
-    mockFields[name] = getMock({
-      entity: namedType,
-      schema,
-    })
-  } else {
-    mockFields[name] = generateData({ name, type: namedType })
-  }
-
-  return mockFields
-}
-
-const resolveListOFNamedTypes = ({ mockFields, schema, name, field }) => {
-  return mockFields
-}
-
-const getMockFieldsData = ({ typeFields, selectedFields, schema }) => {
-  const data = typeFields.reduce((mockFields, field) => {
-    if (field.kind === 'FieldDefinition') {
-      const name = field.name.value
-      //   const type = field.type
-
-      if (['NonNullType', 'NamedType'].includes(getKind(field.type))) {
-        return resolveNamedType({
-          mockFields,
-          schema,
-          name,
-          field,
-        })
-      }
-
-      if (getKind(field.type) === 'ListType') {
-        if (getKind(field.type) === 'NamedType') {
-          if (!isScalarType(getNamedType(field.type))) {
-            mockFields[name] = [
-              getMock({
-                entity: getNamedType(field.type),
-                schema,
-              }),
-              getMock({
-                entity: getNamedType(field.type),
-                schema,
-              }),
-            ]
-          } else {
-            mockFields[name] = generateData({
-              name,
-              type: getNamedType(field.type),
-            })
-          }
-        } else if (getKind(field.type) === 'NonNullType') {
-          if (!isScalarType(getNamedType(field.type))) {
-            mockFields[name] = [
-              getMock({
-                entity: getNamedType(field.type),
-                schema,
-              }),
-              getMock({
-                entity: getNamedType(field.type),
-                schema,
-              }),
-            ]
-          } else {
-            mockFields[name] = generateData({
-              name,
-              type: getNamedType(field.type),
-            })
-          }
+        if (["string", "number"].includes(type)) {
+          element = generateData({ name: fieldName, type });
+        } else {
+          element = getMock(element);
         }
+
+        return element;
+      });
+    } else {
+      const type = typeof data[fieldName];
+
+      if (["string", "number"].includes(type)) {
+        data[fieldName] = generateData({ name: fieldName, type });
+      } else {
+        data[fieldName] = getMock(data[fieldName]);
       }
     }
+  }
 
-    return mockFields
-  }, {})
+  return data;
+};
 
-  return data
-}
+const resolveScalars = (schema) => {
+  const ast = parse(schema);
 
-const resolveUnion = ({ ast, types }) =>
-  ast.definitions.find(
-    (def) =>
-      def.name.value ===
-      types[Math.floor(Math.random() * types.length)].name.value
-  ).fields
+  let scalars = {};
 
-const getMock = ({ schema, entity, fields }) => {
-  const ast = parse(schema)
+  ast.definitions
+    .filter((def) => def.kind === "ScalarTypeDefinition")
+    .forEach((scalar) => {
+      scalars[scalar.name.value] = () => "scalar";
+    });
 
-  const definition = ast.definitions.find((def) => def.name.value === entity)
+  return scalars;
+};
 
-  const typeFields =
-    definition.kind === 'UnionTypeDefinition'
-      ? resolveUnion({
-          ast,
-          types: definition.types,
-        })
-      : definition.fields
+const getMocks = async ({ query, schema }) => {
+  try {
+    const server = mockServer(schema, resolveScalars(schema));
 
-  // TODO - Cater for nested selection
-  const selectedFields =
-    fields &&
-    fields.reduce((selectFields, field) => {
-      selectFields[field] = 1
+    const initialQueryData = await server.query(query, {});
 
-      return selectFields
-    }, {})
+    const mockedData = getMock(initialQueryData);
 
-  const mocks = getMockFieldsData({ typeFields, selectedFields, schema })
+    return mockedData;
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-  return mocks
-}
-
-module.exports = { getMock }
+module.exports = { getMocks };
