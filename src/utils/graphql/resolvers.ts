@@ -1,6 +1,7 @@
-import { getSupportedRequests } from ".";
-import { RequestSpecifications } from "../../interfaces/graphql";
-import { executeMutation, executeQuery } from "../../services/request";
+import { getConfig, getSupportedRequests } from '.';
+import { RequestSpecifications } from '../../interfaces/graphql';
+import { executeRequest } from '../../services/request';
+import { getControllers } from '../state/stateController';
 
 export const buildResolvers = (
   configFilePath: string,
@@ -8,29 +9,31 @@ export const buildResolvers = (
 ) => {
   const supportedRequests: Array<RequestSpecifications> =
     getSupportedRequests(schemaFilePath);
+  const { entities } = getConfig(configFilePath);
+  const controllers = getControllers(entities);
 
   return supportedRequests.reduce(
     (resolvers, request) => {
       const { name, type } = request;
 
       switch (type) {
-        case "Query":
+        case 'Query':
           return {
             ...resolvers,
             Query: {
               ...resolvers.Query,
               [name]() {
-                return executeQuery(name, configFilePath);
+                return executeRequest(name, controllers, configFilePath);
               },
             },
           };
-        case "Mutation":
+        case 'Mutation':
           return {
             ...resolvers,
             Mutation: {
               ...resolvers.Mutation,
               [name]() {
-                return executeMutation(name, configFilePath);
+                return executeRequest(name, controllers, configFilePath);
               },
             },
           };

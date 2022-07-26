@@ -14,7 +14,6 @@ export async function startApolloServer(
   schemaFilePath: string,
   port: number = 4000
 ) {
-  //TODO: improve this name; we validate and write if no file exists
   ensureConfigFileExists(configFilePath);
 
   const typeDefs = getTypeDefs(schemaFilePath);

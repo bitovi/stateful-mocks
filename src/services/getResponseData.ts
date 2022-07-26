@@ -2,7 +2,6 @@ import { ResponseDefinition } from '../interfaces/graphql';
 import { StateController } from '../interfaces/state';
 import { getEntityInstance } from '../utils/state/stateMachine';
 
-//todo: I need to modify the config.json structure; each entity instance should have it's own state machine,
 export const getResponseData = (
   response: ResponseDefinition | Array<ResponseDefinition>,
   stateControllers: Array<StateController>

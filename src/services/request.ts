@@ -1,10 +1,10 @@
-import { ServerError } from "../errors/serverError";
-import { ConfigRequest } from "../interfaces/graphql";
-import { getConfig } from "../utils/graphql";
-import { getRequestName } from "../utils/graphql/request";
-import { getControllers } from "../utils/state/stateController";
-import { getEntityInstance } from "../utils/state/stateMachine";
-import { getResponseData } from "./getResponseData";
+import { ServerError } from '../errors/serverError';
+import { ConfigRequest } from '../interfaces/graphql';
+import { StateController } from '../interfaces/state';
+import { getConfig } from '../utils/graphql';
+import { getRequestName } from '../utils/graphql/request';
+import { getEntityInstance } from '../utils/state/stateMachine';
+import { getResponseData } from './getResponseData';
 
 const getRequestFromConfig = (
   operationName: string,
@@ -23,26 +23,12 @@ export const getConfigRequestsNames = (requests: Array<ConfigRequest>) => {
   }, []);
 };
 
-export const executeQuery = (operationName: string, configFilePath: string) => {
-  const request = getRequestFromConfig(operationName, configFilePath);
-  const { entities } = getConfig(configFilePath);
-  const stateController = getControllers(entities);
-
-  if (!request) {
-    throw new ServerError(
-      `Couldn't find request ${operationName} in config.json`
-    );
-  }
-  return getResponseData(request.response, stateController);
-};
-
-export const executeMutation = (
+export const executeRequest = (
   operationName: string,
+  stateControllers: Array<StateController>,
   configFilePath: string
 ) => {
   const request = getRequestFromConfig(operationName, configFilePath);
-  const { entities } = getConfig(configFilePath);
-  const stateController = getControllers(entities);
 
   if (!request) {
     throw new ServerError(
@@ -50,12 +36,14 @@ export const executeMutation = (
     );
   }
 
-  const { response, stateChanges } = request;
+  const { response, stateChanges = null } = request;
 
   if (stateChanges) {
     stateChanges.forEach(({ id, event, entity }) => {
-      getEntityInstance(stateController, entity, id).send(event);
+      const entityInstance = getEntityInstance(stateControllers, entity, id);
+
+      entityInstance.send(event);
     });
   }
-  return getResponseData(response, stateController);
+  return getResponseData(response, stateControllers);
 };
