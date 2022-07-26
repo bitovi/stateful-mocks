@@ -1,13 +1,13 @@
-import { ApolloServer } from "apollo-server-express";
-import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
-import express from "express";
-import http from "http";
-import bodyParser from "body-parser";
+import { ApolloServer } from 'apollo-server-express';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import express from 'express';
+import http from 'http';
+import bodyParser from 'body-parser';
 
-import { getTypeDefs } from "./utils/graphql";
-import { buildResolvers } from "./utils/graphql/resolvers";
-import { interceptNewRequest } from "./middlewares/interceptNewRequest";
-import { validateConfig } from "./utils/config";
+import { getTypeDefs } from './utils/graphql';
+import { buildResolvers } from './utils/graphql/resolvers';
+import { interceptNewRequest } from './middlewares/interceptNewRequest';
+import { ensureConfigFileExists } from './utils/config';
 
 export async function startApolloServer(
   configFilePath: string,
@@ -15,7 +15,7 @@ export async function startApolloServer(
   port: number = 4000
 ) {
   //TODO: improve this name; we validate and write if no file exists
-  validateConfig(configFilePath);
+  ensureConfigFileExists(configFilePath);
 
   const typeDefs = getTypeDefs(schemaFilePath);
   const resolvers = buildResolvers(configFilePath, schemaFilePath);
@@ -26,7 +26,7 @@ export async function startApolloServer(
     typeDefs,
     resolvers,
     csrfPrevention: true,
-    cache: "bounded",
+    cache: 'bounded',
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 
