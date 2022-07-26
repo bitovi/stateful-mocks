@@ -2,6 +2,16 @@ const { mockServer } = require("@graphql-tools/mock");
 const casual = require("casual");
 const { parse } = require("graphql");
 
+const getFieldType = (field) => {
+  const type = typeof field;
+
+  if (type === "number" && field % 1 !== 0) {
+    return "float";
+  }
+
+  return type;
+};
+
 const generateData = ({ name, type }) => {
   switch (type) {
     case "string":
@@ -9,33 +19,33 @@ const generateData = ({ name, type }) => {
 
     case "number":
       return casual[name] || casual.integer(1, 100);
-  }
 
-  return name;
+    case "float":
+      return casual[name] || casual.double(1, 100);
+  }
+};
+
+const resolveTypeToData = ({ fieldName, field }) => {
+  const type = getFieldType(field);
+
+  if (["string", "number", "float"].includes(type)) {
+    return generateData({ name: fieldName, type });
+  } else {
+    return getMock(field);
+  }
 };
 
 const getMock = (data) => {
   for (const fieldName in data) {
     if (Array.isArray(data[fieldName])) {
-      data[fieldName] = data[fieldName].map((element) => {
-        const type = typeof element;
-
-        if (["string", "number"].includes(type)) {
-          element = generateData({ name: fieldName, type });
-        } else {
-          element = getMock(element);
-        }
-
-        return element;
-      });
+      data[fieldName] = data[fieldName].map((element) =>
+        resolveTypeToData({ fieldName, field: element })
+      );
     } else {
-      const type = typeof data[fieldName];
-
-      if (["string", "number"].includes(type)) {
-        data[fieldName] = generateData({ name: fieldName, type });
-      } else {
-        data[fieldName] = getMock(data[fieldName]);
-      }
+      data[fieldName] = resolveTypeToData({
+        fieldName,
+        field: data[fieldName],
+      });
     }
   }
 
@@ -60,11 +70,13 @@ const getMocks = async ({ query, schema }) => {
   try {
     const server = mockServer(schema, resolveScalars(schema));
 
-    const initialQueryData = await server.query(query, {});
+    let initialQueryData = (await server.query(query, {})).data;
 
-    const mockedData = getMock(initialQueryData);
+    initialQueryData = initialQueryData[Object.keys(initialQueryData)[0]];
 
-    return mockedData;
+    initialQueryData = JSON.parse(JSON.stringify(initialQueryData));
+
+    return getMock(initialQueryData);
   } catch (error) {
     console.error(error);
   }
