@@ -1,6 +1,6 @@
-import { ResponseDefinition } from "../interfaces/graphql";
-import { StateController } from "../interfaces/state";
-import { getEntityInstance } from "../utils/state/stateMachine";
+import { ResponseDefinition } from '../interfaces/graphql';
+import { StateController } from '../interfaces/state';
+import { getEntityInstance } from '../utils/state/stateMachine';
 
 //todo: I need to modify the config.json structure; each entity instance should have it's own state machine,
 export const getResponseData = (
@@ -23,9 +23,17 @@ const getEntityStateData = (
   const { id, entity } = response;
   const entityInstance = getEntityInstance(stateControllers, entity, id);
 
+  let responseData;
+
   if (response.state) {
-    return entityInstance.getStateData(response.state);
+    responseData = entityInstance.getStateData(response.state);
   } else {
-    return entityInstance.getCurrentStateData();
+    responseData = entityInstance.getCurrentStateData();
   }
+
+  if (!Object.keys(responseData).length) {
+    responseData = null;
+  }
+
+  return responseData;
 };

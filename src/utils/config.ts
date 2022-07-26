@@ -1,10 +1,10 @@
-import casual from "casual";
-import fs from "fs";
-import { parse } from "graphql";
-import { ServerError } from "../errors/serverError";
-import { getMock } from "../generator";
-import { ConfigRequest } from "../interfaces/graphql";
-import { getConfig, getTypeDefs } from "./graphql";
+import casual from 'casual';
+import fs from 'fs';
+import { parse } from 'graphql';
+import { ServerError } from '../errors/serverError';
+import { getMock } from '../generator';
+import { ConfigRequest } from '../interfaces/graphql';
+import { getConfig, getTypeDefs } from './graphql';
 
 //todo: find type for schema
 const getEntityName = (
@@ -22,7 +22,7 @@ const getEntityName = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === "ListType") {
+  if (type.kind === 'ListType') {
     return type.type.name.value;
   } else {
     return type.name.value;
@@ -44,7 +44,7 @@ export const isQueryList = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === "ListType") {
+  if (type.kind === 'ListType') {
     return true;
   } else {
     return false;
@@ -83,7 +83,7 @@ export const updateConfig = (
       response: isList ? [response] : response,
     };
 
-    if (requestType === "mutation") {
+    if (requestType === 'mutation') {
       newRequest.stateChanges = [
         {
           id: entityInstance,
@@ -139,7 +139,7 @@ export const updateConfig = (
       response: isList ? [response] : response,
     };
 
-    if (requestType === "mutation") {
+    if (requestType === 'mutation') {
       newRequest.stateChanges = [
         {
           id: entityInstance,
@@ -169,7 +169,7 @@ const writeNewConfig = (config, configFilePath: string) => {
   );
 };
 
-export const validateConfig = (configFilePath: string): void => {
+export const ensureConfigFileExists = (configFilePath: string): void => {
   const absolutePath = `${process.cwd()}/${configFilePath}`;
   const validPath = fs.existsSync(absolutePath);
 
@@ -184,8 +184,8 @@ export const validateConfig = (configFilePath: string): void => {
 };
 
 const ensureFileDirectoryExits = (filePath: string) => {
-  if (filePath.includes("/")) {
-    const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
+  if (filePath.includes('/')) {
+    const directoriesPath = filePath.substr(0, filePath.lastIndexOf('/'));
 
     fs.mkdirSync(directoriesPath, { recursive: true });
   }
