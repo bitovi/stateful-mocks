@@ -1,8 +1,8 @@
-import { getConfig, getSupportedRequests } from '.';
-import { RequestSpecifications } from '../../interfaces/graphql';
-import { StateController } from '../../interfaces/state';
-import { executeRequest } from '../../services/request';
-import { getControllers } from '../state/stateController';
+import { getConfig, getSupportedRequests } from ".";
+import { RequestSpecifications } from "../../interfaces/graphql";
+import { StateController } from "../../interfaces/state";
+import { executeRequest } from "../../services/request";
+import { getControllers } from "../state/stateController";
 
 export const buildResolvers = (
   configFilePath: string,

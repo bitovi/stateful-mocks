@@ -1,11 +1,11 @@
-import { ServerError } from '../errors/serverError';
-import { ConfigRequest } from '../interfaces/graphql';
-import { StateController } from '../interfaces/state';
-import { getConfig } from '../utils/graphql';
-import { getRequestName } from '../utils/graphql/request';
-import { getControllers } from '../utils/state/stateController';
-import { getEntityInstance } from '../utils/state/stateMachine';
-import { getResponseData } from './getResponseData';
+import { ServerError } from "../errors/serverError";
+import { ConfigRequest } from "../interfaces/graphql";
+import { StateController } from "../interfaces/state";
+import { getConfig } from "../utils/graphql";
+import { getRequestName } from "../utils/graphql/request";
+import { getControllers } from "../utils/state/stateController";
+import { getEntityInstance } from "../utils/state/stateMachine";
+import { getResponseData } from "./getResponseData";
 
 const getRequestFromConfig = (
   operationName: string,
