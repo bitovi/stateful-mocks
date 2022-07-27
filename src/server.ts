@@ -1,13 +1,13 @@
-import { ApolloServer } from "apollo-server-express";
-import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
-import express from "express";
-import http from "http";
-import bodyParser from "body-parser";
+import { ApolloServer } from 'apollo-server-express';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import express from 'express';
+import http from 'http';
+import bodyParser from 'body-parser';
 
-import { getFile } from "./utils/graphql";
-import { buildResolvers } from "./utils/graphql/resolvers";
-import { interceptNewRequest } from "./middlewares/interceptNewRequest";
-import { ensureConfigFileExists } from "./utils/config";
+import { getFile } from './utils/graphql';
+import { buildResolvers } from './utils/graphql/resolvers';
+import { interceptNewRequest } from './middlewares/interceptNewRequest';
+import { ensureConfigFileExists } from './utils/config';
 
 export async function startApolloServer(
   configFilePath: string,
@@ -25,15 +25,20 @@ export async function startApolloServer(
     typeDefs: schema,
     resolvers,
     csrfPrevention: true,
-    cache: "bounded",
+    cache: 'bounded',
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 
   await server.start();
 
   app.use(bodyParser.json());
-  app.use((request, response, next) => {
-    interceptNewRequest(request, response, configFilePath, schemaFilePath);
+  app.use(async (request, response, next) => {
+    await interceptNewRequest(
+      request,
+      response,
+      configFilePath,
+      schemaFilePath
+    );
     next();
   });
 
@@ -44,3 +49,4 @@ export async function startApolloServer(
     `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
   );
 }
+startApolloServer('demo/config.json', 'demo/schema.graphql', 3000);

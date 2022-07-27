@@ -1,6 +1,6 @@
-import { ResponseDefinition } from "../interfaces/graphql";
-import { StateController } from "../interfaces/state";
-import { getEntityInstance } from "../utils/state/stateMachine";
+import { ResponseDefinition } from '../interfaces/graphql';
+import { StateController } from '../interfaces/state';
+import { getEntityInstance } from '../utils/state/stateMachine';
 
 export const getResponseData = (
   response: ResponseDefinition | Array<ResponseDefinition>,
@@ -17,7 +17,7 @@ export const getResponseData = (
 };
 
 const getEntityStateData = (
-  { id, entity, state = "" }: ResponseDefinition,
+  { id, entity, state = '' }: ResponseDefinition,
   stateControllers: Array<StateController>
 ) => {
   const entityInstance = getEntityInstance(stateControllers, entity, id);

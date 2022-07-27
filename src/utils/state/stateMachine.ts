@@ -1,4 +1,4 @@
-import { createMachine, interpret } from "xstate";
+import { createMachine, interpret } from 'xstate';
 
 export class StateMachine {
   interpreter: any;

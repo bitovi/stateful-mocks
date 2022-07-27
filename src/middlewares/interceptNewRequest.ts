@@ -1,10 +1,10 @@
-import { parse } from "graphql";
-import { RequestSpecifications } from "../interfaces/graphql";
-import { getConfigRequestsNames } from "../services/request";
-import { isQueryList, updateConfig } from "../utils/config";
-import { getConfig, getSupportedRequests, getFile } from "../utils/graphql";
+import { parse } from 'graphql';
+import { RequestSpecifications } from '../interfaces/graphql';
+import { getConfigRequestsNames } from '../services/request';
+import { isQueryList, updateConfig } from '../utils/config';
+import { getConfig, getSupportedRequests, getFile } from '../utils/graphql';
 
-export const interceptNewRequest = (
+export const interceptNewRequest = async (
   request,
   _response,
   configFilePath,
@@ -33,7 +33,7 @@ export const interceptNewRequest = (
         requestType,
         getFile(schemaFilePath)
       );
-      updateConfig(
+      await updateConfig(
         request,
         requestName,
         requestType,

@@ -1,10 +1,11 @@
-import { ServerError } from "../errors/serverError";
-import { ConfigRequest } from "../interfaces/graphql";
-import { StateController } from "../interfaces/state";
-import { getConfig } from "../utils/graphql";
-import { getRequestName } from "../utils/graphql/request";
-import { getEntityInstance } from "../utils/state/stateMachine";
-import { getResponseData } from "./getResponseData";
+import { ServerError } from '../errors/serverError';
+import { ConfigRequest } from '../interfaces/graphql';
+import { StateController } from '../interfaces/state';
+import { getConfig } from '../utils/graphql';
+import { getRequestName } from '../utils/graphql/request';
+import { getControllers } from '../utils/state/stateController';
+import { getEntityInstance } from '../utils/state/stateMachine';
+import { getResponseData } from './getResponseData';
 
 const getRequestFromConfig = (
   operationName: string,
@@ -23,12 +24,36 @@ export const getConfigRequestsNames = (requests: Array<ConfigRequest>) => {
   }, []);
 };
 
-export const executeRequest = (
-  operationName: string,
-  stateControllers: Array<StateController>,
+const ensureControllersAreUpdated = (
+  oldControllers: Array<StateController>,
   configFilePath: string
 ) => {
+  const { entities } = getConfig(configFilePath);
+  const newControllers: Array<StateController> = getControllers(entities);
+
+  if (oldControllers !== newControllers) {
+    newControllers.forEach((controller) => {
+      if (
+        !oldControllers.some((element) => element.entity === controller.entity)
+      )
+        oldControllers.push(controller);
+    });
+  }
+
+  return oldControllers;
+};
+
+export const executeRequest = (
+  operationName: string,
+  configFilePath: string,
+  controllers: Array<StateController>
+) => {
   const request = getRequestFromConfig(operationName, configFilePath);
+
+  const updatedControllers = ensureControllersAreUpdated(
+    controllers,
+    configFilePath
+  );
 
   if (!request) {
     throw new ServerError(
@@ -39,10 +64,10 @@ export const executeRequest = (
   const { response, stateChanges = null } = request;
   if (stateChanges) {
     stateChanges.forEach(({ id, event, entity }) => {
-      const entityInstance = getEntityInstance(stateControllers, entity, id);
+      const entityInstance = getEntityInstance(updatedControllers, entity, id);
 
       entityInstance.send(event);
     });
   }
-  return getResponseData(response, stateControllers);
+  return getResponseData(response, updatedControllers);
 };
