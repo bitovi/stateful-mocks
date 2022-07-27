@@ -1,5 +1,6 @@
 import { ServerError } from "../errors/serverError";
 import { ConfigRequest } from "../interfaces/graphql";
+import { StateController } from "../interfaces/state";
 import { getConfig } from "../utils/graphql";
 import { getRequestName } from "../utils/graphql/request";
 import { getControllers } from "../utils/state/stateController";
@@ -23,26 +24,36 @@ export const getConfigRequestsNames = (requests: Array<ConfigRequest>) => {
   }, []);
 };
 
-export const executeQuery = (operationName: string, configFilePath: string) => {
-  const request = getRequestFromConfig(operationName, configFilePath);
-  const { entities } = getConfig(configFilePath);
-  const stateController = getControllers(entities);
-
-  if (!request) {
-    throw new ServerError(
-      `Couldn't find request ${operationName} in config.json`
-    );
-  }
-  return getResponseData(request.response, stateController);
-};
-
-export const executeMutation = (
-  operationName: string,
+const ensureControllersAreUpdated = (
+  oldControllers: Array<StateController>,
   configFilePath: string
 ) => {
-  const request = getRequestFromConfig(operationName, configFilePath);
   const { entities } = getConfig(configFilePath);
-  const stateController = getControllers(entities);
+  const newControllers: Array<StateController> = getControllers(entities);
+
+  if (oldControllers !== newControllers) {
+    newControllers.forEach((controller) => {
+      if (
+        !oldControllers.some((element) => element.entity === controller.entity)
+      )
+        oldControllers.push(controller);
+    });
+  }
+
+  return oldControllers;
+};
+
+export const executeRequest = (
+  operationName: string,
+  configFilePath: string,
+  controllers: Array<StateController>
+) => {
+  const request = getRequestFromConfig(operationName, configFilePath);
+
+  const updatedControllers = ensureControllersAreUpdated(
+    controllers,
+    configFilePath
+  );
 
   if (!request) {
     throw new ServerError(
@@ -50,12 +61,13 @@ export const executeMutation = (
     );
   }
 
-  const { response, stateChanges } = request;
-
+  const { response, stateChanges = null } = request;
   if (stateChanges) {
     stateChanges.forEach(({ id, event, entity }) => {
-      getEntityInstance(stateController, entity, id).send(event);
+      const entityInstance = getEntityInstance(updatedControllers, entity, id);
+
+      entityInstance.send(event);
     });
   }
-  return getResponseData(response, stateController);
+  return getResponseData(response, updatedControllers);
 };

@@ -7,6 +7,8 @@ export function getControllers(entities): Array<StateController> {
       const { statesData } = entities[key].instances[instanceId];
       const { stateMachine } = entities[key];
 
+      stateMachine.id = instanceId;
+
       return {
         id: instanceId,
         stateMachine: new StateMachine(statesData, stateMachine),

@@ -4,26 +4,25 @@ import express from "express";
 import http from "http";
 import bodyParser from "body-parser";
 
-import { getTypeDefs } from "./utils/graphql";
+import { getFile } from "./utils/graphql";
 import { buildResolvers } from "./utils/graphql/resolvers";
 import { interceptNewRequest } from "./middlewares/interceptNewRequest";
-import { validateConfig } from "./utils/config";
+import { ensureConfigFileExists } from "./utils/config";
 
 export async function startApolloServer(
   configFilePath: string,
   schemaFilePath: string,
   port: number = 4000
 ) {
-  //TODO: improve this name; we validate and write if no file exists
-  validateConfig(configFilePath);
+  ensureConfigFileExists(configFilePath);
 
-  const typeDefs = getTypeDefs(schemaFilePath);
+  const schema = getFile(schemaFilePath);
   const resolvers = buildResolvers(configFilePath, schemaFilePath);
 
   const app = express();
   const httpServer = http.createServer(app);
   const server = new ApolloServer({
-    typeDefs,
+    typeDefs: schema,
     resolvers,
     csrfPrevention: true,
     cache: "bounded",
@@ -33,8 +32,13 @@ export async function startApolloServer(
   await server.start();
 
   app.use(bodyParser.json());
-  app.use((request, response, next) => {
-    interceptNewRequest(request, response, configFilePath, schemaFilePath);
+  app.use(async (request, response, next) => {
+    await interceptNewRequest(
+      request,
+      response,
+      configFilePath,
+      schemaFilePath
+    );
     next();
   });
 
@@ -45,3 +49,4 @@ export async function startApolloServer(
     `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
   );
 }
+startApolloServer("demo/config.json", "demo/schema.graphql", 3000);

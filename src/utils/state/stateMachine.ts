@@ -6,6 +6,7 @@ export class StateMachine {
 
   constructor(statesData, machine) {
     const _machine = createMachine(machine);
+
     this.interpreter = interpret(_machine).start();
     this.statesData = statesData;
   }

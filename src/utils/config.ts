@@ -2,9 +2,10 @@ import casual from "casual";
 import fs from "fs";
 import { parse } from "graphql";
 import { ServerError } from "../errors/serverError";
-import { getMock } from "../generator";
-import { ConfigRequest } from "../interfaces/graphql";
-import { getConfig, getTypeDefs } from "./graphql";
+import { getMocks } from "../generator";
+import { Config, ConfigRequest } from "../interfaces/graphql";
+import { getConfig, getFile } from "./graphql";
+const fsPromises = fs.promises;
 
 //todo: find type for schema
 const getEntityName = (
@@ -51,7 +52,7 @@ export const isQueryList = (
   }
 };
 
-export const updateConfig = (
+export const updateConfig = async (
   request: ConfigRequest,
   requestName: string,
   requestType: string,
@@ -59,12 +60,13 @@ export const updateConfig = (
   schemaFilePath: string,
   isList: boolean
 ) => {
+  const schema = getFile(schemaFilePath);
   const config = getConfig(configFilePath);
   let { requests, entities } = config;
-  const schema = getTypeDefs(schemaFilePath);
 
   const entity = getEntityName(requestName, requestType, schema);
 
+  //todo: implement id to stop using first entity, always
   const [entityInstance] = Object.keys(entities[entity]?.instances ?? {});
 
   //todo: refactor; this is quite crude
@@ -95,9 +97,9 @@ export const updateConfig = (
 
     requests.push(newRequest);
   } else {
-    const mock = getMock({
+    const mock = await getMocks({
+      query: request.body.query,
       schema,
-      entity,
     });
 
     const initialState = casual.word;
@@ -154,22 +156,22 @@ export const updateConfig = (
   config.entities = entities;
   config.requests = requests;
 
-  writeNewConfig(config, configFilePath);
+  await writeNewConfig(config, configFilePath);
 };
 
-const writeNewConfig = (config, configFilePath: string) => {
-  fs.writeFile(
-    configFilePath,
-    JSON.stringify(config, null, 3),
-    function writeJSON(error) {
-      if (error) {
-        throw new ServerError();
-      }
-    }
-  );
+const writeNewConfig = async (
+  config: Config,
+  configFilePath: string
+): Promise<void> => {
+  try {
+    await fsPromises.writeFile(configFilePath, JSON.stringify(config, null, 3));
+  } catch (error: unknown) {
+    throw new ServerError();
+  }
 };
-
-export const validateConfig = (configFilePath: string): void => {
+export const ensureConfigFileExists = async (
+  configFilePath: string
+): Promise<void> => {
   const absolutePath = `${process.cwd()}/${configFilePath}`;
   const validPath = fs.existsSync(absolutePath);
 
@@ -179,7 +181,7 @@ export const validateConfig = (configFilePath: string): void => {
       entities: {},
       requests: [],
     };
-    writeNewConfig(config, configFilePath);
+    await writeNewConfig(config, configFilePath);
   }
 };
 

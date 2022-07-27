@@ -2,12 +2,12 @@ import { ResponseDefinition } from "../interfaces/graphql";
 import { StateController } from "../interfaces/state";
 import { getEntityInstance } from "../utils/state/stateMachine";
 
-//todo: I need to modify the config.json structure; each entity instance should have it's own state machine,
 export const getResponseData = (
   response: ResponseDefinition | Array<ResponseDefinition>,
   stateControllers: Array<StateController>
 ) => {
-  if (Array.isArray(response)) {
+  const isComposedReponse = Array.isArray(response);
+  if (isComposedReponse) {
     return response.map((responseChunk) => {
       return getEntityStateData(responseChunk, stateControllers);
     });
@@ -17,15 +17,16 @@ export const getResponseData = (
 };
 
 const getEntityStateData = (
-  response: ResponseDefinition,
+  { id, entity, state = "" }: ResponseDefinition,
   stateControllers: Array<StateController>
 ) => {
-  const { id, entity } = response;
   const entityInstance = getEntityInstance(stateControllers, entity, id);
 
-  if (response.state) {
-    return entityInstance.getStateData(response.state);
-  } else {
-    return entityInstance.getCurrentStateData();
-  }
+  const response = state
+    ? entityInstance.getStateData(state)
+    : entityInstance.getCurrentStateData();
+
+  const isEmptyResponse = !Boolean(Object.keys(response).length);
+
+  return isEmptyResponse ? null : response;
 };
