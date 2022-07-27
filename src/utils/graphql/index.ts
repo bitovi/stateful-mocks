@@ -34,3 +34,13 @@ export const getSupportedRequests = (
 
   return [].concat.apply([], supportedRequests);
 };
+
+export const isSupportedRequest = (
+  requestName: string,
+  schemaFilePath: string
+): boolean => {
+  const supportedRequests: Array<RequestSpecifications> =
+    getSupportedRequests(schemaFilePath);
+
+  return supportedRequests.some((request) => request.name === requestName);
+};
