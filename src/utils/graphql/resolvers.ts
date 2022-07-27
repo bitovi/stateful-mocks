@@ -10,36 +10,22 @@ export const buildResolvers = (
   const supportedRequests: Array<RequestSpecifications> =
     getSupportedRequests(schemaFilePath);
   const { entities } = getConfig(configFilePath);
+
   const controllers = getControllers(entities);
 
   return supportedRequests.reduce(
     (resolvers, request) => {
       const { name, type } = request;
 
-      switch (type) {
-        case 'Query':
-          return {
-            ...resolvers,
-            Query: {
-              ...resolvers.Query,
-              [name]() {
-                return executeRequest(name, controllers, configFilePath);
-              },
-            },
-          };
-        case 'Mutation':
-          return {
-            ...resolvers,
-            Mutation: {
-              ...resolvers.Mutation,
-              [name]() {
-                return executeRequest(name, controllers, configFilePath);
-              },
-            },
-          };
-      }
-
-      return resolvers;
+      return {
+        ...resolvers,
+        [type]: {
+          ...resolvers[type],
+          [name]() {
+            return executeRequest(name, controllers, configFilePath);
+          },
+        },
+      };
     },
     { Query: {}, Mutation: {} }
   );
