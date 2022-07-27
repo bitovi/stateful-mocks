@@ -1,3 +1,47 @@
+type Test {
+  # Scalar
+  text: String
+  # Non-null Scalar
+  score: Int!
+  # List of Scalar
+  arr1: [String]
+  # List of Non null Scalar
+  arr2: [Float!]
+  # Non empty list of Non null scalar
+  arr3: [Int!]!
+  # Named type
+  item: TestItem1
+  # Non null type
+  requiredItem: TestItem1!
+  # Named type list
+  items1: [TestItem1]
+  # Non null named type list
+  items2: [TestItem1!]
+  # Named type non-empty list
+  items3: [TestItem1]!
+  # Non null named type non-empty list
+  items4: [TestItem1!]!
+  # Union type
+  both: ItemsUnion
+  # Union type list
+  bothArr1: [ItemsUnion]
+  # Non null union type list
+  bothArr2: [ItemsUnion!]
+  # Non null union type non-empty list
+  bothArr3: [ItemsUnion!]!
+}
+
+type TestItem1 {
+  name: String!
+  item1: TestItem2
+}
+
+type TestItem2 {
+  name: String!
+}
+
+union ItemsUnion = TestItem1 | TestItem2
+
 type Person {
   id: Int!
   name: String!
@@ -25,6 +69,7 @@ type Shade {
 
 type Query {
   personByName(name: String): Person
+  test: Test
 }
 
 input CreatePersonInput {
