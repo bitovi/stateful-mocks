@@ -6,7 +6,8 @@ export const getResponseData = (
   response: ResponseDefinition | Array<ResponseDefinition>,
   stateControllers: Array<StateController>
 ) => {
-  if (Array.isArray(response)) {
+  const isComposedReponse = Array.isArray(response);
+  if (isComposedReponse) {
     return response.map((responseChunk) => {
       return getEntityStateData(responseChunk, stateControllers);
     });
@@ -16,23 +17,16 @@ export const getResponseData = (
 };
 
 const getEntityStateData = (
-  response: ResponseDefinition,
+  { id, entity, state = '' }: ResponseDefinition,
   stateControllers: Array<StateController>
 ) => {
-  const { id, entity } = response;
   const entityInstance = getEntityInstance(stateControllers, entity, id);
 
-  let responseData;
+  const response = state
+    ? entityInstance.getStateData(state)
+    : entityInstance.getCurrentStateData();
 
-  if (response.state) {
-    responseData = entityInstance.getStateData(response.state);
-  } else {
-    responseData = entityInstance.getCurrentStateData();
-  }
+  const isEmptyResponse = !Boolean(Object.keys(response).length);
 
-  if (!Object.keys(responseData).length) {
-    responseData = null;
-  }
-
-  return responseData;
+  return isEmptyResponse ? null : response;
 };

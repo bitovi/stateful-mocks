@@ -5,6 +5,8 @@ type Person {
 
 type Query {
   personByName(name: String): Person
+  personByNameQuo(name: String): Person
+  personByNameDi(name: String): Person
   people: [Person]
 }
 
@@ -28,4 +30,10 @@ type Mutation {
   updatePersonName(input: UpdatePersonNameInput!): Person
   updatePersondAge(input: UpdatePersonAgeInput!): Person
   removePerson(id: Int!): Person
+
+  
+  createPersonDi(input: CreatePersonInput!): Person
+  createPersonQuo(input: CreatePersonInput!): Person
+  updatePersonNameQuo(input: UpdatePersonNameInput!): Person 
+  updatePersonNameDi(input: UpdatePersonNameInput!): Person
 }
