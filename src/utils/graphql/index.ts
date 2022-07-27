@@ -1,11 +1,11 @@
-import fs from 'fs';
-import { parse } from 'graphql';
-import { Config, RequestSpecifications } from '../../interfaces/graphql';
+import fs from "fs";
+import { parse } from "graphql";
+import { Config, RequestSpecifications } from "../../interfaces/graphql";
 
 export const getFile = (schemaFilePath: string): string => {
   return fs.readFileSync(
     `${process.cwd()}/${schemaFilePath}`,
-    'utf8'
+    "utf8"
   ) as unknown as string;
 };
 
@@ -23,7 +23,7 @@ export const getSupportedRequests = (
     .definitions.map((definition: any) => {
       const { value } = definition.name;
 
-      if (value === 'Query' || value === 'Mutation') {
+      if (value === "Query" || value === "Mutation") {
         return definition.fields.map((field) => ({
           name: field.name.value,
           type: value,

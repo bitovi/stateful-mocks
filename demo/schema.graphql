@@ -31,9 +31,8 @@ type Mutation {
   updatePersondAge(input: UpdatePersonAgeInput!): Person
   removePerson(id: Int!): Person
 
-  
   createPersonDi(input: CreatePersonInput!): Person
   createPersonQuo(input: CreatePersonInput!): Person
-  updatePersonNameQuo(input: UpdatePersonNameInput!): Person 
+  updatePersonNameQuo(input: UpdatePersonNameInput!): Person
   updatePersonNameDi(input: UpdatePersonNameInput!): Person
 }
