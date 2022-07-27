@@ -2,7 +2,7 @@ import fs from 'fs';
 import { parse } from 'graphql';
 import { Config, RequestSpecifications } from '../../interfaces/graphql';
 
-export const getTypeDefs = (schemaFilePath: string): string => {
+export const getFile = (schemaFilePath: string): string => {
   return fs.readFileSync(
     `${process.cwd()}/${schemaFilePath}`,
     'utf8'
@@ -10,10 +10,7 @@ export const getTypeDefs = (schemaFilePath: string): string => {
 };
 
 export const getConfig = (configFilePath: string): Config => {
-  const config = fs.readFileSync(
-    `${process.cwd()}/${configFilePath}`,
-    'utf8'
-  ) as unknown as string;
+  const config = getFile(configFilePath);
 
   return JSON.parse(config);
 };
@@ -21,7 +18,7 @@ export const getConfig = (configFilePath: string): Config => {
 export const getSupportedRequests = (
   schemaFilePath: string
 ): Array<RequestSpecifications> => {
-  const typeDefs = getTypeDefs(schemaFilePath);
+  const typeDefs = getFile(schemaFilePath);
   const supportedRequests = parse(String(typeDefs))
     .definitions.map((definition: any) => {
       const { value } = definition.name;

@@ -4,7 +4,7 @@ import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 
-import { getTypeDefs } from './utils/graphql';
+import { getFile } from './utils/graphql';
 import { buildResolvers } from './utils/graphql/resolvers';
 import { interceptNewRequest } from './middlewares/interceptNewRequest';
 import { ensureConfigFileExists } from './utils/config';
@@ -16,13 +16,13 @@ export async function startApolloServer(
 ) {
   ensureConfigFileExists(configFilePath);
 
-  const typeDefs = getTypeDefs(schemaFilePath);
+  const schema = getFile(schemaFilePath);
   const resolvers = buildResolvers(configFilePath, schemaFilePath);
 
   const app = express();
   const httpServer = http.createServer(app);
   const server = new ApolloServer({
-    typeDefs,
+    typeDefs: schema,
     resolvers,
     csrfPrevention: true,
     cache: 'bounded',

@@ -4,7 +4,7 @@ import { parse } from 'graphql';
 import { ServerError } from '../errors/serverError';
 import { getMock } from '../generator';
 import { ConfigRequest } from '../interfaces/graphql';
-import { getConfig, getTypeDefs } from './graphql';
+import { getConfig, getFile } from './graphql';
 
 //todo: find type for schema
 const getEntityName = (
@@ -61,7 +61,7 @@ export const updateConfig = (
 ) => {
   const config = getConfig(configFilePath);
   let { requests, entities } = config;
-  const schema = getTypeDefs(schemaFilePath);
+  const schema = getFile(schemaFilePath);
 
   const entity = getEntityName(requestName, requestType, schema);
 
