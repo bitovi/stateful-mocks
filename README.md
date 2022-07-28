@@ -12,7 +12,7 @@ Coming soon!
 $ npm i @bitovi/stateful-mocks
 
 $ npx sms --help
-Usage: gen [options]
+Usage: sms [options] [command]
 
 CLI for the stateful mocks server(sms)
 
@@ -21,8 +21,6 @@ Options:
   -h, --help      display help for command
 
 Commands:
-  gen [options]   CLI to generate mock data for an entity
-                  of a GraphQL schema
   run [options]   CLI to run mock server
   help [command]  display help for command
 ```
