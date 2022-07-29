@@ -1,11 +1,11 @@
-import fs from 'fs';
-import { parse } from 'graphql';
-import { hri } from 'human-readable-ids';
+import fs from "fs";
+import { parse } from "graphql";
+import { hri } from "human-readable-ids";
 
-import { ServerError } from '../errors/serverError';
-import { getMocks } from '../generator';
-import { Config, ConfigRequest } from '../interfaces/graphql';
-import { getConfig, getFile } from './graphql';
+import { ServerError } from "../errors/serverError";
+import { getMocks } from "../generator";
+import { Config, ConfigRequest } from "../interfaces/graphql";
+import { getConfig, getFile } from "./graphql";
 const fsPromises = fs.promises;
 
 //todo: find type for schema
@@ -24,7 +24,7 @@ const getEntityName = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === 'ListType') {
+  if (type.kind === "ListType") {
     return type.type.name.value;
   } else {
     return type.name.value;
@@ -46,7 +46,7 @@ export const isQueryList = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === 'ListType') {
+  if (type.kind === "ListType") {
     return true;
   } else {
     return false;
@@ -86,7 +86,7 @@ export const updateConfig = async (
       response: isList ? [response] : response,
     };
 
-    if (requestType === 'mutation') {
+    if (requestType === "mutation") {
       newRequest.stateChanges = [
         {
           entity,
@@ -106,8 +106,8 @@ export const updateConfig = async (
     });
 
     const instanceId = hri.random();
-    const stateName = hri.random().split('-')[0];
-    const eventName = `${hri.random().split('-')[0]}Event`;
+    const stateName = hri.random().split("-")[0];
+    const eventName = `${hri.random().split("-")[0]}Event`;
 
     entities = {
       [entity]: {
@@ -138,7 +138,7 @@ export const updateConfig = async (
       id: instanceId,
     };
 
-    if (requestType === 'mutation') {
+    if (requestType === "mutation") {
       response.state = stateName;
     }
 
@@ -147,7 +147,7 @@ export const updateConfig = async (
       response: isList ? [response] : response,
     };
 
-    if (requestType === 'mutation') {
+    if (requestType === "mutation") {
       newRequest.stateChanges = [
         {
           entity,
@@ -192,8 +192,8 @@ export const ensureConfigFileExists = async (
 };
 
 const ensureFileDirectoryExits = (filePath: string) => {
-  if (filePath.includes('/')) {
-    const directoriesPath = filePath.substr(0, filePath.lastIndexOf('/'));
+  if (filePath.includes("/")) {
+    const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
 
     fs.mkdirSync(directoriesPath, { recursive: true });
   }
