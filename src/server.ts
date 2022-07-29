@@ -49,4 +49,3 @@ export async function startApolloServer(
     `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
   );
 }
-startApolloServer("demo/config.json", "demo/schema.graphql", 3000);

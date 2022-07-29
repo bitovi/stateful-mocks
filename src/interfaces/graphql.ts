@@ -25,7 +25,6 @@ export interface GraphqlRequestBody {
 }
 
 export interface Machine {
-  id: string;
   initial: string;
   states: { [key: string]: any };
 }

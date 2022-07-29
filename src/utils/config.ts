@@ -1,6 +1,7 @@
-import casual from "casual";
 import fs from "fs";
 import { parse } from "graphql";
+import { hri } from "human-readable-ids";
+
 import { ServerError } from "../errors/serverError";
 import { getMocks } from "../generator";
 import { Config, ConfigRequest } from "../interfaces/graphql";
@@ -75,8 +76,8 @@ export const updateConfig = async (
 
     const body = JSON.stringify(request.body);
     const response = {
-      id: entityInstance,
       entity,
+      id: entityInstance,
       state: entityStates,
     };
     //todo: refactor this; too similar logic
@@ -88,40 +89,45 @@ export const updateConfig = async (
     if (requestType === "mutation") {
       newRequest.stateChanges = [
         {
+          entity,
           id: entityInstance,
           event: requestName,
-          entity,
         },
       ];
     }
 
     requests.push(newRequest);
   } else {
+    const { query } = request.body;
+
     const mock = await getMocks({
-      query: request.body.query,
+      query,
       schema,
     });
 
-    const initialState = casual.word;
-    const entityInstanceId = casual.word;
+    const instanceId = hri.random();
+    const stateName = hri.random().split("-")[0];
+    const eventName = `make${stateName
+      .slice(0, 1)
+      .toUpperCase()}${stateName.slice(1)}`;
 
     entities = {
       [entity]: {
         stateMachine: {
-          id: casual.word,
-          initial: initialState,
+          initial: stateName,
           states: {
-            [initialState]: {
+            empty: {},
+            [stateName]: {
               on: {
-                [casual.word]: initialState,
+                [eventName]: stateName,
               },
             },
           },
         },
         instances: {
-          [entityInstanceId]: {
+          [instanceId]: {
             statesData: {
-              [initialState]: mock,
+              [stateName]: mock,
             },
           },
         },
@@ -130,11 +136,14 @@ export const updateConfig = async (
 
     const body = JSON.stringify(request.body);
 
-    const response = {
-      id: entityInstanceId,
+    const response: any = {
       entity,
-      state: initialState,
+      id: instanceId,
     };
+
+    if (requestType === "mutation") {
+      response.state = stateName;
+    }
 
     let newRequest: ConfigRequest = {
       body,
@@ -144,9 +153,9 @@ export const updateConfig = async (
     if (requestType === "mutation") {
       newRequest.stateChanges = [
         {
-          id: entityInstance,
-          event: requestName,
           entity,
+          id: instanceId,
+          event: eventName,
         },
       ];
     }
