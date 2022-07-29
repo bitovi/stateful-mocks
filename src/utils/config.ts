@@ -1,10 +1,11 @@
-import casual from "casual";
-import fs from "fs";
-import { parse } from "graphql";
-import { ServerError } from "../errors/serverError";
-import { getMocks } from "../generator";
-import { Config, ConfigRequest } from "../interfaces/graphql";
-import { getConfig, getFile } from "./graphql";
+import fs from 'fs';
+import { parse } from 'graphql';
+import { hri } from 'human-readable-ids';
+
+import { ServerError } from '../errors/serverError';
+import { getMocks } from '../generator';
+import { Config, ConfigRequest } from '../interfaces/graphql';
+import { getConfig, getFile } from './graphql';
 const fsPromises = fs.promises;
 
 //todo: find type for schema
@@ -23,7 +24,7 @@ const getEntityName = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === "ListType") {
+  if (type.kind === 'ListType') {
     return type.type.name.value;
   } else {
     return type.name.value;
@@ -45,7 +46,7 @@ export const isQueryList = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === "ListType") {
+  if (type.kind === 'ListType') {
     return true;
   } else {
     return false;
@@ -75,8 +76,8 @@ export const updateConfig = async (
 
     const body = JSON.stringify(request.body);
     const response = {
-      id: entityInstance,
       entity,
+      id: entityInstance,
       state: entityStates,
     };
     //todo: refactor this; too similar logic
@@ -85,43 +86,45 @@ export const updateConfig = async (
       response: isList ? [response] : response,
     };
 
-    if (requestType === "mutation") {
+    if (requestType === 'mutation') {
       newRequest.stateChanges = [
         {
+          entity,
           id: entityInstance,
           event: requestName,
-          entity,
         },
       ];
     }
 
     requests.push(newRequest);
   } else {
+    const { query } = request.body;
+
     const mock = await getMocks({
-      query: request.body.query,
+      query,
       schema,
     });
 
-    const initialState = casual.word;
-    const entityInstanceId = casual.word;
+    const instanceId = hri.random();
+    const stateName = hri.random().split('-')[0];
+    const eventName = `${hri.random().split('-')[0]}Event`;
 
     entities = {
       [entity]: {
         stateMachine: {
-          id: casual.word,
-          initial: initialState,
+          initial: stateName,
           states: {
-            [initialState]: {
+            [stateName]: {
               on: {
-                [casual.word]: initialState,
+                [eventName]: stateName,
               },
             },
           },
         },
         instances: {
-          [entityInstanceId]: {
+          [instanceId]: {
             statesData: {
-              [initialState]: mock,
+              [stateName]: mock,
             },
           },
         },
@@ -130,23 +133,26 @@ export const updateConfig = async (
 
     const body = JSON.stringify(request.body);
 
-    const response = {
-      id: entityInstanceId,
+    const response: any = {
       entity,
-      state: initialState,
+      id: instanceId,
     };
+
+    if (requestType === 'mutation') {
+      response.state = stateName;
+    }
 
     let newRequest: ConfigRequest = {
       body,
       response: isList ? [response] : response,
     };
 
-    if (requestType === "mutation") {
+    if (requestType === 'mutation') {
       newRequest.stateChanges = [
         {
-          id: entityInstance,
-          event: requestName,
           entity,
+          id: instanceId,
+          event: eventName,
         },
       ];
     }
@@ -186,8 +192,8 @@ export const ensureConfigFileExists = async (
 };
 
 const ensureFileDirectoryExits = (filePath: string) => {
-  if (filePath.includes("/")) {
-    const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
+  if (filePath.includes('/')) {
+    const directoriesPath = filePath.substr(0, filePath.lastIndexOf('/'));
 
     fs.mkdirSync(directoriesPath, { recursive: true });
   }
