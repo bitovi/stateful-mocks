@@ -1,8 +1,7 @@
 import { parse } from "graphql";
-import { RequestSpecifications } from "../interfaces/graphql";
-import { getConfigRequestsNames } from "../services/request";
 import { saveNewRequestInConfig } from "../utils/config";
-import { getConfig, getSupportedRequests } from "../utils/graphql";
+import { getConfig, isSupportedRequest } from "../utils/graphql";
+import { isNewRequest } from "../utils/graphql/request";
 
 export const interceptNewRequest = async (
   request,
@@ -17,16 +16,11 @@ export const interceptNewRequest = async (
       parsedQuery.definitions[0].selectionSet.selections[0].name.value;
     const requestType = parsedQuery.definitions[0].operation;
 
-    const supportedRequests: Array<RequestSpecifications> =
-      getSupportedRequests(schemaFilePath);
-
     const { requests } = getConfig(configFilePath);
-    const requestsNames = getConfigRequestsNames(requests);
-    const isNewRequest = !requestsNames.includes(requestName);
 
     if (
-      supportedRequests.some((request) => request.name === requestName) &&
-      isNewRequest
+      isSupportedRequest(requestName, schemaFilePath) &&
+      isNewRequest(requests, request, requestName)
     ) {
       await saveNewRequestInConfig(
         request,

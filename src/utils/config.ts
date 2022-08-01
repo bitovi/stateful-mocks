@@ -92,7 +92,7 @@ const getNewEntity = async (query: any, schema: any): Promise<Entity> => {
   };
 };
 
-const writeNewRequest = (
+const formatNewRequest = (
   requestBody: any,
   entity: string,
   isList: boolean,
@@ -156,7 +156,7 @@ export const saveNewRequestInConfig = async (
 
   const isList = isQueryList(requestName, requestType, getFile(schemaFilePath));
 
-  const newRequest = writeNewRequest(
+  const newRequest = formatNewRequest(
     requestBody,
     entity,
     isList,
@@ -182,9 +182,9 @@ export const ensureConfigFileExists = async (
   configFilePath: string
 ): Promise<void> => {
   const absolutePath = `${process.cwd()}/${configFilePath}`;
-  const validPath = fs.existsSync(absolutePath);
+  const isValidPath = fs.existsSync(absolutePath);
 
-  if (!validPath) {
+  if (!isValidPath) {
     ensureFileDirectoryExits(configFilePath);
     const config = {
       entities: {},

@@ -1,3 +1,4 @@
+import { deepEqual } from "assert";
 import { parse } from "graphql";
 import { ConfigRequest } from "../../interfaces/graphql";
 
@@ -13,4 +14,20 @@ export const getRequestName = (request): string => {
 
 export const getRequestType = (request): string => {
   return getParsedQuery(request).definitions[0].operation;
+};
+
+export const isNewRequest = (
+  requests: Array<any>,
+  request: any,
+  requestName: string
+): boolean => {
+  const requestVariables = request.body.variables ?? null;
+  return !!!requests.find((previousRequest) => {
+    const previousRequestVariables = JSON.parse(previousRequest.body).variables;
+    const previousRequestName = getRequestName(previousRequest);
+
+    const areVarsEqual = deepEqual(previousRequestVariables, requestVariables);
+
+    return requestName === previousRequestName && areVarsEqual;
+  });
 };
