@@ -1,6 +1,6 @@
-const { readFileSync } = require("fs");
-const path = require("path");
-const { getMocks } = require("../generator");
+import { readFileSync } from "fs";
+import path from "path";
+import { getMocks } from "../generator";
 
 const schema = readFileSync(
   path.join(__dirname, "./resources/testSchema.graphql"),
