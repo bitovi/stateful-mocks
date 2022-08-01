@@ -29,7 +29,7 @@ export interface Machine {
   states: { [key: string]: any };
 }
 
-interface Entity {
+export interface Entity {
   stateMachine: Machine;
   instances: { [key: string]: unknown };
 }

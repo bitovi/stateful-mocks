@@ -4,7 +4,12 @@ import { hri } from "human-readable-ids";
 
 import { ServerError } from "../errors/serverError";
 import { getMocks } from "../generator";
-import { Config, ConfigRequest } from "../interfaces/graphql";
+import {
+  Config,
+  ConfigRequest,
+  Entity,
+  ResponseDefinition,
+} from "../interfaces/graphql";
 import { getConfig, getFile } from "./graphql";
 const fsPromises = fs.promises;
 
@@ -53,119 +58,114 @@ export const isQueryList = (
   }
 };
 
-export const updateConfig = async (
-  request: ConfigRequest,
-  requestName: string,
-  requestType: string,
-  configFilePath: string,
-  schemaFilePath: string,
-  isList: boolean
-) => {
-  const schema = getFile(schemaFilePath);
-  const config = getConfig(configFilePath);
-  let { requests, entities } = config;
+const getNewEntity = async (query: any, schema: any): Promise<Entity> => {
+  const mock = await getMocks({
+    query,
+    schema,
+  });
 
-  const entity = getEntityName(requestName, requestType, schema);
+  const instanceId = hri.random();
+  const stateName = hri.random().split("-")[0];
+  const eventName = `make${stateName
+    .slice(0, 1)
+    .toUpperCase()}${stateName.slice(1)}`;
 
-  //todo: implement id to stop using first entity, always
-  const [entityInstance] = Object.keys(entities[entity]?.instances ?? {});
-
-  //todo: refactor; this is quite crude
-  if (entityInstance) {
-    const [entityStates] = Object.keys(entities[entity].stateMachine.states);
-
-    const body = JSON.stringify(request.body);
-    const response = {
-      entity,
-      id: entityInstance,
-      state: entityStates,
-    };
-    //todo: refactor this; too similar logic
-    let newRequest: ConfigRequest = {
-      body,
-      response: isList ? [response] : response,
-    };
-
-    if (requestType === "mutation") {
-      newRequest.stateChanges = [
-        {
-          entity,
-          id: entityInstance,
-          event: requestName,
-        },
-      ];
-    }
-
-    requests.push(newRequest);
-  } else {
-    const { query } = request.body;
-
-    const mock = await getMocks({
-      query,
-      schema,
-    });
-
-    const instanceId = hri.random();
-    const stateName = hri.random().split("-")[0];
-    const eventName = `make${stateName
-      .slice(0, 1)
-      .toUpperCase()}${stateName.slice(1)}`;
-
-    entities = {
-      [entity]: {
-        stateMachine: {
-          initial: stateName,
-          states: {
-            empty: {},
-            [stateName]: {
-              on: {
-                [eventName]: stateName,
-              },
-            },
-          },
-        },
-        instances: {
-          [instanceId]: {
-            statesData: {
-              [stateName]: mock,
-            },
+  return {
+    stateMachine: {
+      initial: stateName,
+      states: {
+        empty: {},
+        [stateName]: {
+          on: {
+            [eventName]: stateName,
           },
         },
       },
-    };
-
-    const body = JSON.stringify(request.body);
-
-    const response: any = {
-      entity,
-      id: instanceId,
-    };
-
-    if (requestType === "mutation") {
-      response.state = stateName;
-    }
-
-    let newRequest: ConfigRequest = {
-      body,
-      response: isList ? [response] : response,
-    };
-
-    if (requestType === "mutation") {
-      newRequest.stateChanges = [
-        {
-          entity,
-          id: instanceId,
-          event: eventName,
+    },
+    instances: {
+      [instanceId]: {
+        statesData: {
+          [stateName]: mock,
         },
-      ];
-    }
-    requests.push(newRequest);
+      },
+    },
+  };
+};
+
+const writeNewRequest = (
+  requestBody: any,
+  entity: string,
+  isList: boolean,
+  requestType: any,
+  entities: { [key: string]: Entity }
+): ConfigRequest => {
+  const [id] = Object.keys(entities[entity]?.instances ?? {});
+  //todo: find state transition instead of hard coded second position
+  const stateName = Object.keys(entities[entity].stateMachine.states)[1];
+  const [event] = Object.keys(
+    entities[entity].stateMachine.states[stateName].on
+  );
+
+  const body = JSON.stringify(requestBody);
+  const response: ResponseDefinition = {
+    entity,
+    id,
+  };
+
+  let newRequest: ConfigRequest = {
+    body,
+    response: isList ? [response] : response,
+  };
+
+  if (requestType === "mutation") {
+    response.state = stateName;
+
+    newRequest.stateChanges = [
+      {
+        entity,
+        id,
+        event,
+      },
+    ];
   }
 
-  config.entities = entities;
-  config.requests = requests;
+  return newRequest;
+};
 
-  await writeNewConfig(config, configFilePath);
+export const saveNewRequestInConfig = async (
+  { body: requestBody }: any,
+  requestName: string,
+  requestType: string,
+  configFilePath: string,
+  schemaFilePath: string
+) => {
+  const schema = getFile(schemaFilePath);
+  const config = getConfig(configFilePath);
+  let { entities, requests } = config;
+
+  const entity = getEntityName(requestName, requestType, schema);
+
+  const isNewEntity = !Boolean(
+    Object.keys(entities[entity]?.instances ?? {}).length
+  );
+
+  if (isNewEntity) {
+    const newEntity = await getNewEntity(requestBody.query, schema);
+    entities = { ...entities, [entity]: newEntity };
+  }
+
+  const isList = isQueryList(requestName, requestType, getFile(schemaFilePath));
+
+  const newRequest = writeNewRequest(
+    requestBody,
+    entity,
+    isList,
+    requestType,
+    entities
+  );
+  requests.push(newRequest);
+
+  await writeNewConfig({ entities, requests }, configFilePath);
 };
 
 const writeNewConfig = async (

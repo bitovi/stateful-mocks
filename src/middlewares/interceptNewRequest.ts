@@ -1,8 +1,8 @@
 import { parse } from "graphql";
 import { RequestSpecifications } from "../interfaces/graphql";
 import { getConfigRequestsNames } from "../services/request";
-import { isQueryList, updateConfig } from "../utils/config";
-import { getConfig, getSupportedRequests, getFile } from "../utils/graphql";
+import { saveNewRequestInConfig } from "../utils/config";
+import { getConfig, getSupportedRequests } from "../utils/graphql";
 
 export const interceptNewRequest = async (
   request,
@@ -28,18 +28,12 @@ export const interceptNewRequest = async (
       supportedRequests.some((request) => request.name === requestName) &&
       isNewRequest
     ) {
-      const isList = isQueryList(
-        requestName,
-        requestType,
-        getFile(schemaFilePath)
-      );
-      await updateConfig(
+      await saveNewRequestInConfig(
         request,
         requestName,
         requestType,
         configFilePath,
-        schemaFilePath,
-        isList
+        schemaFilePath
       );
     }
   }
