@@ -20,7 +20,7 @@ export const interceptNewRequest = async (
 
     if (
       isSupportedRequest(requestName, schemaFilePath) &&
-      isNewRequest(requests, request, requestName)
+      isNewRequest(requests, request)
     ) {
       await saveNewRequestInConfig(
         request,

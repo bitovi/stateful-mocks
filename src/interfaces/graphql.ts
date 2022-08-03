@@ -21,7 +21,7 @@ export interface ConfigRequest {
 export interface GraphqlRequestBody {
   query: unknown;
   variables: { [key: string]: any };
-  operationName: string;
+  operationName?: string;
 }
 
 export interface Machine {
@@ -31,8 +31,13 @@ export interface Machine {
 
 export interface Entity {
   stateMachine: Machine;
-  instances: { [key: string]: unknown };
+  instances: /* { [key: string]: Instance }; */ any;
 }
+
+//todo: fix instance type
+type Instance = {
+  statesData: { [key: string]: unknown };
+};
 
 export interface Config {
   entities: { [key: string]: Entity };

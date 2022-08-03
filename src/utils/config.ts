@@ -58,10 +58,11 @@ export const isQueryList = (
   }
 };
 
-const getNewEntity = async (query: any, schema: any): Promise<Entity> => {
+const getNewEntity = async (query, schema, variables): Promise<Entity> => {
   const mock = await getMocks({
     query,
     schema,
+    variables,
   });
 
   const instanceId = hri.random();
@@ -100,11 +101,13 @@ const formatNewRequest = (
   entities: { [key: string]: Entity }
 ): ConfigRequest => {
   const [id] = Object.keys(entities[entity]?.instances ?? {});
-  //todo: find state transition instead of hard coded second position
-  const stateName = Object.keys(entities[entity].stateMachine.states)[1];
-  const [event] = Object.keys(
-    entities[entity].stateMachine.states[stateName].on
-  );
+
+  const { states } = entities[entity].stateMachine;
+  const lastAddedKey = Number([Object.keys(states).length - 1]);
+
+  const stateName = Object.keys(states)[lastAddedKey];
+
+  const [event] = Object.keys(states[stateName].on);
 
   const body = JSON.stringify(requestBody);
   const response: ResponseDefinition = {
@@ -142,6 +145,7 @@ export const saveNewRequestInConfig = async (
   const schema = getFile(schemaFilePath);
   const config = getConfig(configFilePath);
   let { entities, requests } = config;
+  const { query, variables } = requestBody;
 
   const entity = getEntityName(requestName, requestType, schema);
 
@@ -150,8 +154,27 @@ export const saveNewRequestInConfig = async (
   );
 
   if (isNewEntity) {
-    const newEntity = await getNewEntity(requestBody.query, schema);
+    const newEntity = await getNewEntity(query, schema, variables);
+
     entities = { ...entities, [entity]: newEntity };
+  } else {
+    const mock = await getMocks({
+      query,
+      schema,
+      variables,
+    });
+
+    const id = Object.keys(entities[entity].instances)[0];
+    const stateName = hri.random().split("-")[0];
+    const eventName = `make${stateName
+      .slice(0, 1)
+      .toUpperCase()}${stateName.slice(1)}`;
+
+    entities[entity].stateMachine.states[stateName] = {
+      on: { [eventName]: stateName },
+    };
+
+    entities[entity].instances[id].statesData[stateName] = mock;
   }
 
   const isList = isQueryList(requestName, requestType, getFile(schemaFilePath));

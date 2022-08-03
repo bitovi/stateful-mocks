@@ -1,6 +1,6 @@
-import { deepEqual } from "assert";
 import { parse } from "graphql";
 import { ConfigRequest } from "../../interfaces/graphql";
+import { deepEqual } from "../object";
 
 //todo: check in next standup: I think the return type from parse set by graphql may be mistaken; it's probably OperationDefinitionNode in some cases
 const getParsedQuery = (request: ConfigRequest): any => {
@@ -16,18 +16,15 @@ export const getRequestType = (request): string => {
   return getParsedQuery(request).definitions[0].operation;
 };
 
-export const isNewRequest = (
-  requests: Array<any>,
-  request: any,
-  requestName: string
-): boolean => {
-  const requestVariables = request.body.variables ?? null;
-  return !!!requests.find((previousRequest) => {
-    const previousRequestVariables = JSON.parse(previousRequest.body).variables;
-    const previousRequestName = getRequestName(previousRequest);
+export const isNewRequest = (requests: Array<any>, request: any): boolean => {
+  const { query, variables } = request.body;
+  return !!!requests.find(({ body }) => {
+    const { query: previousRequestQuery, variables: previousRequestVariables } =
+      JSON.parse(body);
 
-    const areVarsEqual = deepEqual(previousRequestVariables, requestVariables);
-
-    return requestName === previousRequestName && areVarsEqual;
+    return (
+      String(query) === previousRequestQuery &&
+      deepEqual(variables, previousRequestVariables)
+    );
   });
 };
