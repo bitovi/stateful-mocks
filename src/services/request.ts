@@ -1,19 +1,32 @@
-import { ServerError } from "../errors/serverError";
-import { ConfigRequest } from "../interfaces/graphql";
-import { StateController } from "../interfaces/state";
-import { getConfig } from "../utils/graphql";
-import { getRequestName } from "../utils/graphql/request";
-import { getControllers } from "../utils/state/stateController";
-import { getEntityInstance } from "../utils/state/stateMachine";
-import { getResponseData } from "./getResponseData";
+import { ServerError } from '../errors/serverError';
+import { ConfigRequest } from '../interfaces/graphql';
+import { StateController } from '../interfaces/state';
+import { getConfig } from '../utils/graphql';
+import { getRequestName } from '../utils/graphql/request';
+import { deepEqual } from '../utils/object';
+import { getControllers } from '../utils/state/stateController';
+import { getEntityInstance } from '../utils/state/stateMachine';
+import { getResponseData } from './getResponseData';
+
+interface Variables {
+  input: { [key: string]: any };
+}
 
 const getRequestFromConfig = (
   operationName: string,
+  variables: Variables,
   configFilePath: string
 ) => {
   const { requests } = getConfig(configFilePath);
 
-  return requests.find((request) => getRequestName(request) === operationName);
+  return requests.find((request) => {
+    const { variables: previousRequestVariables } = JSON.parse(request.body);
+
+    return (
+      getRequestName(request) === operationName &&
+      deepEqual(variables, previousRequestVariables)
+    );
+  });
 };
 
 export const getConfigRequestsNames = (requests: Array<ConfigRequest>) => {
@@ -45,10 +58,15 @@ const ensureControllersAreUpdated = (
 
 export const executeRequest = (
   operationName: string,
+  variables: Variables,
   configFilePath: string,
   controllers: Array<StateController>
 ) => {
-  const request = getRequestFromConfig(operationName, configFilePath);
+  const request = getRequestFromConfig(
+    operationName,
+    variables,
+    configFilePath
+  );
 
   const updatedControllers = ensureControllersAreUpdated(
     controllers,
