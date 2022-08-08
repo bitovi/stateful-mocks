@@ -1,12 +1,13 @@
-import { parse } from 'graphql';
-import { getConfig, getFile } from '.';
-import { getMocks } from '../../generator';
-import { ConfigRequest } from '../../interfaces/graphql';
-import { StateController } from '../../interfaces/state';
-import { getEntityName, writeNewConfig } from '../config';
-import { deepEqual, mergeDeep } from '../object';
-import { getControllers } from '../state/stateController';
-import { getEntityInstance } from '../state/stateMachine';
+import { parse } from "graphql";
+import { getConfig, getSchemaFile } from ".";
+import { getMocks } from "../../generator";
+import { ConfigRequest } from "../../interfaces/graphql";
+import { StateController } from "../../interfaces/state";
+import { getEntityName, writeNewConfig } from "../config";
+import { deepEqual, mergeDeep } from "../object";
+import { getControllers } from "../state/stateController";
+import { getEntityInstance } from "../state/stateMachine";
+import signale from "signale";
 
 //todo: check in next standup: I think the return type from parse set by graphql may be mistaken; it's probably OperationDefinitionNode in some cases
 const getParsedQuery = (request: ConfigRequest): any => {
@@ -33,7 +34,7 @@ export const findRequest = (
     );
 
     const definitions: any = parse(query).definitions.find(
-      (definition) => definition.kind === 'OperationDefinition'
+      (definition) => definition.kind === "OperationDefinition"
     );
     const queryName = definitions.selectionSet.selections[0].name.value;
 
@@ -62,7 +63,8 @@ export const ensureStateHasAllRequestFields = async (
   requestName: string,
   requestType: string
 ): Promise<void> => {
-  const schema = getFile(schemaFilePath);
+  signale.pending("ensureStateHasAllRequestFields");
+  const schema = getSchemaFile(schemaFilePath);
   let { requests, entities } = getConfig(configFilePath);
   const { query, variables } = request.body;
 
@@ -71,7 +73,7 @@ export const ensureStateHasAllRequestFields = async (
   const entity = getEntityName(requestName, requestType, schema);
   const controllers: Array<StateController> = getControllers(entities);
 
-  if (requestType === 'query') {
+  if (requestType === "query") {
     if (Array.isArray(response)) {
       await Promise.all(
         response.map(async ({ id }) => {
@@ -129,6 +131,7 @@ export const ensureStateHasAllRequestFields = async (
   }
 
   await writeNewConfig({ entities, requests }, configFilePath);
+  signale.success("ensureStateHasAllRequestFields");
 };
 
 const mockMissingInstanceFields = async (

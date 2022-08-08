@@ -1,8 +1,9 @@
 import fs from "fs";
 import { parse } from "graphql";
 import { Config, RequestSpecifications } from "../../interfaces/graphql";
+import { readFile } from "../io";
 
-export const getFile = (schemaFilePath: string): string => {
+export const getSchemaFile = (schemaFilePath: string): string => {
   return fs.readFileSync(
     `${process.cwd()}/${schemaFilePath}`,
     "utf8"
@@ -10,14 +11,14 @@ export const getFile = (schemaFilePath: string): string => {
 };
 
 export const getConfig = (configFilePath: string): Config => {
-  const config = getFile(configFilePath);
+  const config = readFile(configFilePath);
 
   return JSON.parse(config);
 };
 export const getSupportedRequests = (
   schemaFilePath: string
 ): Array<RequestSpecifications> => {
-  const typeDefs = getFile(schemaFilePath);
+  const typeDefs = getSchemaFile(schemaFilePath);
   const supportedRequests = parse(String(typeDefs))
     .definitions.map((definition: any) => {
       const { value } = definition.name;

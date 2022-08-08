@@ -69,6 +69,7 @@ type Shade {
 
 type Query {
   personByName(name: String): Person
+  people: [Person]
   test: Test
 }
 
