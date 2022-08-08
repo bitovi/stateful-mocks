@@ -16,7 +16,7 @@ const getRequestFromConfig = (
   operationName: string,
   variables: Variables,
   configFilePath: string
-) => {
+): ConfigRequest | undefined => {
   const { requests } = getConfig(configFilePath);
 
   return requests.find((request) => {
@@ -67,11 +67,11 @@ export const executeRequest = (
     variables,
     configFilePath
   );
-
   const updatedControllers = ensureControllersAreUpdated(
     controllers,
     configFilePath
   );
+  const { entities } = getConfig(configFilePath);
 
   if (!request) {
     throw new ServerError(
@@ -83,9 +83,11 @@ export const executeRequest = (
   if (stateChanges) {
     stateChanges.forEach(({ id, event, entity }) => {
       const entityInstance = getEntityInstance(updatedControllers, entity, id);
-
+      const { statesData } = entities[entity].instances[id];
+      const { stateMachine } = entities[entity];
+      entityInstance.refreshState(statesData, stateMachine);
       entityInstance.send(event);
     });
   }
-  return getResponseData(response, updatedControllers);
+  return getResponseData(response, updatedControllers, entities);
 };

@@ -1,4 +1,4 @@
-import { createMachine, interpret } from "xstate";
+import { createMachine, interpret } from 'xstate';
 
 export class StateMachine {
   interpreter: any;
@@ -9,6 +9,15 @@ export class StateMachine {
 
     this.interpreter = interpret(_machine).start();
     this.statesData = statesData;
+  }
+
+  refreshState(statesData, machine) {
+    const currentState = this.getCurrentState();
+    const newMachine = createMachine(machine);
+
+    this.interpreter = interpret(newMachine).start();
+    this.statesData = statesData;
+    this.send(currentState);
   }
 
   getCurrentState() {

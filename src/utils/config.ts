@@ -1,20 +1,20 @@
-import fs from "fs";
-import { parse } from "graphql";
-import { hri } from "human-readable-ids";
+import fs from 'fs';
+import { parse } from 'graphql';
+import { hri } from 'human-readable-ids';
 
-import { ServerError } from "../errors/serverError";
-import { getMocks } from "../generator";
+import { ServerError } from '../errors/serverError';
+import { getMocks } from '../generator';
 import {
   Config,
   ConfigRequest,
   Entity,
   ResponseDefinition,
-} from "../interfaces/graphql";
-import { getConfig, getFile } from "./graphql";
+} from '../interfaces/graphql';
+import { getConfig, getFile } from './graphql';
 const fsPromises = fs.promises;
 
 //todo: find type for schema
-const getEntityName = (
+export const getEntityName = (
   requestName: string,
   requestType: string,
   schema: any
@@ -29,11 +29,20 @@ const getEntityName = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === "ListType") {
+  if (type.kind === 'ListType') {
     return type.type.name.value;
   } else {
     return type.name.value;
   }
+};
+
+export const getRequestFields = ({ body }: ConfigRequest) => {
+  //todo: find type for definition
+  const definition: any = parse(String(body.query)).definitions[0];
+
+  return definition.selectionSet.selections[0].selectionSet.selections.map(
+    (field) => field.name.value
+  );
 };
 
 export const isQueryList = (
@@ -51,14 +60,18 @@ export const isQueryList = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === "ListType") {
+  if (type.kind === 'ListType') {
     return true;
   } else {
     return false;
   }
 };
 
-const getNewEntity = async (query, schema, variables): Promise<Entity> => {
+export const getNewEntity = async (
+  query,
+  schema,
+  variables
+): Promise<Entity> => {
   const mock = await getMocks({
     query,
     schema,
@@ -66,7 +79,7 @@ const getNewEntity = async (query, schema, variables): Promise<Entity> => {
   });
 
   const instanceId = hri.random();
-  const stateName = hri.random().split("-")[0];
+  const stateName = hri.random().split('-')[0];
   const eventName = `make${stateName
     .slice(0, 1)
     .toUpperCase()}${stateName.slice(1)}`;
@@ -120,7 +133,7 @@ const formatNewRequest = (
     response: isList ? [response] : response,
   };
 
-  if (requestType === "mutation") {
+  if (requestType === 'mutation') {
     response.state = stateName;
 
     newRequest.stateChanges = [
@@ -165,7 +178,7 @@ export const saveNewRequestInConfig = async (
     });
 
     const id = Object.keys(entities[entity].instances)[0];
-    const stateName = hri.random().split("-")[0];
+    const stateName = hri.random().split('-')[0];
     const eventName = `make${stateName
       .slice(0, 1)
       .toUpperCase()}${stateName.slice(1)}`;
@@ -191,7 +204,7 @@ export const saveNewRequestInConfig = async (
   await writeNewConfig({ entities, requests }, configFilePath);
 };
 
-const writeNewConfig = async (
+export const writeNewConfig = async (
   config: Config,
   configFilePath: string
 ): Promise<void> => {
@@ -218,8 +231,8 @@ export const ensureConfigFileExists = async (
 };
 
 const ensureFileDirectoryExits = (filePath: string) => {
-  if (filePath.includes("/")) {
-    const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
+  if (filePath.includes('/')) {
+    const directoriesPath = filePath.substr(0, filePath.lastIndexOf('/'));
 
     fs.mkdirSync(directoriesPath, { recursive: true });
   }
