@@ -8,7 +8,7 @@ export const deepEqual = (
 
   return firstObject &&
     secondObject &&
-    firstObjectType === 'object' &&
+    firstObjectType === "object" &&
     firstObjectType === secondObjectType
     ? objectKeys(firstObject).length === objectKeys(secondObject).length &&
         objectKeys(firstObject).every((key) =>
@@ -25,7 +25,7 @@ export const deepEqual = (
  * @returns {object} New object with merged key/values
  */
 export const mergeDeep = (...objects) => {
-  const isObject = (obj) => obj && typeof obj === 'object';
+  const isObject = (obj) => obj && typeof obj === "object";
 
   return objects.reduce((prev, obj) => {
     Object.keys(obj).forEach((key) => {

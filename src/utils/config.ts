@@ -1,16 +1,16 @@
-import fs from 'fs';
-import { parse } from 'graphql';
-import { hri } from 'human-readable-ids';
+import fs from "fs";
+import { parse } from "graphql";
+import { hri } from "human-readable-ids";
 
-import { ServerError } from '../errors/serverError';
-import { getMocks } from '../generator';
+import { ServerError } from "../errors/serverError";
+import { getMocks } from "../generator";
 import {
   Config,
   ConfigRequest,
   Entity,
   ResponseDefinition,
-} from '../interfaces/graphql';
-import { getConfig, getFile } from './graphql';
+} from "../interfaces/graphql";
+import { getConfig, getFile } from "./graphql";
 const fsPromises = fs.promises;
 
 //todo: find type for schema
@@ -29,7 +29,7 @@ export const getEntityName = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === 'ListType') {
+  if (type.kind === "ListType") {
     return type.type.name.value;
   } else {
     return type.name.value;
@@ -60,17 +60,27 @@ export const isQueryList = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === 'ListType') {
+  if (type.kind === "ListType") {
     return true;
   } else {
     return false;
   }
 };
 
+const generateEventProperties = () => {
+  const stateName = hri.random().split("-")[0];
+  const eventName = `make${stateName
+    .slice(0, 1)
+    .toUpperCase()}${stateName.slice(1)}`;
+
+  return { stateName, eventName };
+};
+
 export const getNewEntity = async (
   query,
   schema,
-  variables
+  variables,
+  isList: boolean
 ): Promise<Entity> => {
   const mock = await getMocks({
     query,
@@ -78,32 +88,60 @@ export const getNewEntity = async (
     variables,
   });
 
-  const instanceId = hri.random();
-  const stateName = hri.random().split('-')[0];
-  const eventName = `make${stateName
-    .slice(0, 1)
-    .toUpperCase()}${stateName.slice(1)}`;
+  if (isList) {
+    const firstInstanceId = hri.random();
+    const secondInstanceId = hri.random();
 
-  return {
-    stateMachine: {
-      initial: stateName,
-      states: {
-        empty: {},
-        [stateName]: {
-          on: {
-            [eventName]: stateName,
+    const { stateName, eventName } = generateEventProperties();
+    return {
+      stateMachine: {
+        initial: stateName,
+        states: {
+          empty: {},
+          [stateName]: {
+            on: {
+              [eventName]: stateName,
+            },
           },
         },
       },
-    },
-    instances: {
-      [instanceId]: {
-        statesData: {
-          [stateName]: mock,
+      instances: {
+        [firstInstanceId]: {
+          statesData: {
+            [stateName]: mock?.length ? mock[0] : {},
+          },
+        },
+        [secondInstanceId]: {
+          statesData: {
+            [stateName]: mock?.length ? mock[1] : {},
+          },
         },
       },
-    },
-  };
+    };
+  } else {
+    const id = hri.random();
+    const { stateName, eventName } = generateEventProperties();
+    return {
+      stateMachine: {
+        initial: stateName,
+        states: {
+          empty: {},
+          [stateName]: {
+            on: {
+              [eventName]: stateName,
+            },
+          },
+        },
+      },
+      instances: {
+        [id]: {
+          statesData: {
+            [stateName]: mock,
+          },
+        },
+      },
+    };
+  }
 };
 
 const formatNewRequest = (
@@ -133,7 +171,7 @@ const formatNewRequest = (
     response: isList ? [response] : response,
   };
 
-  if (requestType === 'mutation') {
+  if (requestType === "mutation") {
     response.state = stateName;
 
     newRequest.stateChanges = [
@@ -159,6 +197,7 @@ export const saveNewRequestInConfig = async (
   const config = getConfig(configFilePath);
   let { entities, requests } = config;
   const { query, variables } = requestBody;
+  const isList = isQueryList(requestName, requestType, getFile(schemaFilePath));
 
   const entity = getEntityName(requestName, requestType, schema);
 
@@ -167,7 +206,7 @@ export const saveNewRequestInConfig = async (
   );
 
   if (isNewEntity) {
-    const newEntity = await getNewEntity(query, schema, variables);
+    const newEntity = await getNewEntity(query, schema, variables, isList);
 
     entities = { ...entities, [entity]: newEntity };
   } else {
@@ -177,20 +216,45 @@ export const saveNewRequestInConfig = async (
       variables,
     });
 
-    const id = Object.keys(entities[entity].instances)[0];
-    const stateName = hri.random().split('-')[0];
-    const eventName = `make${stateName
-      .slice(0, 1)
-      .toUpperCase()}${stateName.slice(1)}`;
+    if (isList) {
+      const { stateName, eventName } = generateEventProperties();
 
-    entities[entity].stateMachine.states[stateName] = {
-      on: { [eventName]: stateName },
-    };
+      //todo: refactor this into util func that doesn't relay on array position
+      const instancesOfEntity = Object.keys(entities[entity].instances);
+      const firstInstanceId = instancesOfEntity[0];
+      const secondInstanceId =
+        instancesOfEntity.length < 2 ? hri.random() : instancesOfEntity[1];
 
-    entities[entity].instances[id].statesData[stateName] = mock;
+      if (instancesOfEntity.length < 2) {
+        entities[entity].instances = {
+          ...entities[entity].instances,
+          [secondInstanceId]: {
+            statesData: {
+              [stateName]: {},
+            },
+          },
+        };
+      }
+
+      entities[entity].stateMachine.states[stateName] = {
+        on: { [eventName]: stateName },
+      };
+      entities[entity].instances[firstInstanceId].statesData[stateName] =
+        mock?.length ? mock[0] : {};
+      entities[entity].instances[secondInstanceId].statesData[stateName] =
+        mock?.length ? mock[1] : {};
+    } else {
+      const id = Object.keys(entities[entity].instances)[0];
+
+      const { stateName, eventName } = generateEventProperties();
+
+      entities[entity].stateMachine.states[stateName] = {
+        on: { [eventName]: stateName },
+      };
+
+      entities[entity].instances[id].statesData[stateName] = mock;
+    }
   }
-
-  const isList = isQueryList(requestName, requestType, getFile(schemaFilePath));
 
   const newRequest = formatNewRequest(
     requestBody,
@@ -231,8 +295,8 @@ export const ensureConfigFileExists = async (
 };
 
 const ensureFileDirectoryExits = (filePath: string) => {
-  if (filePath.includes('/')) {
-    const directoriesPath = filePath.substr(0, filePath.lastIndexOf('/'));
+  if (filePath.includes("/")) {
+    const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
 
     fs.mkdirSync(directoriesPath, { recursive: true });
   }
