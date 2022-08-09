@@ -195,7 +195,11 @@ export const saveNewRequestInConfig = async (
   const config = getConfig(configFilePath);
   let { entities, requests } = config;
   const { query, variables } = requestBody;
-  const isList = isQueryList(requestName, requestType, getFile(schemaFilePath));
+  const isList = isQueryList(
+    requestName,
+    requestType,
+    getSchemaFile(schemaFilePath)
+  );
 
   const entity = getEntityName(requestName, requestType, schema);
 
@@ -253,12 +257,6 @@ export const saveNewRequestInConfig = async (
       entities[entity].instances[id].statesData[stateName] = mock;
     }
   }
-
-  const isList = isQueryList(
-    requestName,
-    requestType,
-    getSchemaFile(schemaFilePath)
-  );
 
   const newRequest = formatNewRequest(
     requestBody,

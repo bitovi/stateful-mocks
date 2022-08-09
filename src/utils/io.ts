@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from 'fs';
 const fsPromises = fs.promises;
 
 export const createDirectory = (path) => {
@@ -9,10 +9,10 @@ export const existsDirectory = (path) => {
   return fs.existsSync(path);
 };
 
-export const writeFile = async (content, path): Promise<void> => {
+export const writeFile = async (path, content): Promise<void> => {
   return fsPromises.writeFile(path, content);
 };
 
 export const readFile = (path: string): string => {
-  return fs.readFileSync(path, "utf8") as unknown as string;
+  return fs.readFileSync(path, 'utf8') as unknown as string;
 };
