@@ -1,17 +1,15 @@
-import fs from "fs";
-import { parse } from "graphql";
-import { hri } from "human-readable-ids";
-
-import { ServerError } from "../errors/serverError";
-import { getMocks } from "../generator";
+import { parse } from 'graphql';
+import { hri } from 'human-readable-ids';
+import { createDirectory, existsDirectory, writeFile } from './io';
+import { ServerError } from '../errors/serverError';
+import { getMocks } from '../generator';
 import {
   Config,
   ConfigRequest,
   Entity,
   ResponseDefinition,
-} from "../interfaces/graphql";
-import { getConfig, getFile } from "./graphql";
-const fsPromises = fs.promises;
+} from '../interfaces/graphql';
+import { getConfig, getSchemaFile } from './graphql';
 
 //todo: find type for schema
 export const getEntityName = (
@@ -29,7 +27,7 @@ export const getEntityName = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === "ListType") {
+  if (type.kind === 'ListType') {
     return type.type.name.value;
   } else {
     return type.name.value;
@@ -60,7 +58,7 @@ export const isQueryList = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === "ListType") {
+  if (type.kind === 'ListType') {
     return true;
   } else {
     return false;
@@ -68,7 +66,7 @@ export const isQueryList = (
 };
 
 const generateEventProperties = () => {
-  const stateName = hri.random().split("-")[0];
+  const stateName = hri.random().split('-')[0];
   const eventName = `make${stateName
     .slice(0, 1)
     .toUpperCase()}${stateName.slice(1)}`;
@@ -171,7 +169,7 @@ const formatNewRequest = (
     response: isList ? [response] : response,
   };
 
-  if (requestType === "mutation") {
+  if (requestType === 'mutation') {
     response.state = stateName;
 
     newRequest.stateChanges = [
@@ -193,7 +191,7 @@ export const saveNewRequestInConfig = async (
   configFilePath: string,
   schemaFilePath: string
 ) => {
-  const schema = getFile(schemaFilePath);
+  const schema = getSchemaFile(schemaFilePath);
   const config = getConfig(configFilePath);
   let { entities, requests } = config;
   const { query, variables } = requestBody;
@@ -256,6 +254,12 @@ export const saveNewRequestInConfig = async (
     }
   }
 
+  const isList = isQueryList(
+    requestName,
+    requestType,
+    getSchemaFile(schemaFilePath)
+  );
+
   const newRequest = formatNewRequest(
     requestBody,
     entity,
@@ -273,7 +277,7 @@ export const writeNewConfig = async (
   configFilePath: string
 ): Promise<void> => {
   try {
-    await fsPromises.writeFile(configFilePath, JSON.stringify(config, null, 3));
+    await writeFile(configFilePath, JSON.stringify(config, null, 3));
   } catch (error: unknown) {
     throw new ServerError();
   }
@@ -282,7 +286,7 @@ export const ensureConfigFileExists = async (
   configFilePath: string
 ): Promise<void> => {
   const absolutePath = `${process.cwd()}/${configFilePath}`;
-  const isValidPath = fs.existsSync(absolutePath);
+  const isValidPath = existsDirectory(absolutePath);
 
   if (!isValidPath) {
     ensureFileDirectoryExits(configFilePath);
@@ -295,9 +299,8 @@ export const ensureConfigFileExists = async (
 };
 
 const ensureFileDirectoryExits = (filePath: string) => {
-  if (filePath.includes("/")) {
-    const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
-
-    fs.mkdirSync(directoriesPath, { recursive: true });
+  if (filePath.includes('/')) {
+    const directoriesPath = filePath.substr(0, filePath.lastIndexOf('/'));
+    createDirectory(directoriesPath);
   }
 };
