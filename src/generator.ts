@@ -88,8 +88,7 @@ const getMocks = async ({
   try {
     const server = mockServer(schema, resolveScalars(schema));
 
-    let initialQuery = await server.query(query, variables);
-    let initialQueryData = initialQuery.data;
+    let initialQueryData = (await server.query(query, variables)).data;
 
     initialQueryData = initialQueryData[Object.keys(initialQueryData)[0]];
 
