@@ -1,13 +1,13 @@
-import { parse } from 'graphql';
-import { getConfig, getSchemaFile } from '.';
-import { getMocks } from '../../generator';
-import { ConfigRequest } from '../../interfaces/graphql';
-import { StateController } from '../../interfaces/state';
-import { getEntityName, writeNewConfig } from '../config';
-import { deepEqual, mergeDeep } from '../object';
-import { getControllers } from '../state/stateController';
-import { getEntityInstance } from '../state/stateMachine';
-import signale from 'signale';
+import { parse } from "graphql";
+import { getConfig, getSchemaFile } from ".";
+import { getMocks } from "../../generator";
+import { ConfigRequest } from "../../interfaces/graphql";
+import { StateController } from "../../interfaces/state";
+import { getEntityName, writeNewConfig } from "../config";
+import { deepEqual, mergeDeep } from "../object";
+import { getControllers } from "../state/stateController";
+import { getEntityInstance } from "../state/stateMachine";
+import signale from "signale";
 
 //todo: check in next standup: I think the return type from parse set by graphql may be mistaken; it's probably OperationDefinitionNode in some cases
 const getParsedQuery = (request: ConfigRequest): any => {
@@ -34,7 +34,7 @@ export const findRequest = (
     );
 
     const definitions: any = parse(query).definitions.find(
-      (definition) => definition.kind === 'OperationDefinition'
+      (definition) => definition.kind === "OperationDefinition"
     );
     const queryName = definitions.selectionSet.selections[0].name.value;
 
@@ -63,9 +63,9 @@ export const ensureStateHasAllRequestFields = async (
   requestName: string,
   requestType: string
 ): Promise<void> => {
-  signale.pending('ensureStateHasAllRequestFields');
+  signale.pending("ensureStateHasAllRequestFields");
   const schema = getSchemaFile(schemaFilePath);
-  let { requests, entities } = getConfig(configFilePath);
+  const { requests, entities } = getConfig(configFilePath);
   const { query, variables } = request.body;
 
   const { response } = matchingRequestFromConfig;
@@ -73,7 +73,7 @@ export const ensureStateHasAllRequestFields = async (
   const entity = getEntityName(requestName, requestType, schema);
   const controllers: Array<StateController> = getControllers(entities);
 
-  if (requestType === 'query') {
+  if (requestType === "query") {
     if (Array.isArray(response)) {
       await Promise.all(
         response.map(async ({ id }) => {
@@ -131,7 +131,7 @@ export const ensureStateHasAllRequestFields = async (
   }
 
   await writeNewConfig({ entities, requests }, configFilePath);
-  signale.success('ensureStateHasAllRequestFields');
+  signale.success("ensureStateHasAllRequestFields");
 };
 
 const mockMissingInstanceFields = async (
@@ -150,13 +150,19 @@ const mockMissingInstanceFields = async (
     variables,
   });
 
-  const state =
-    returnState ?? getEntityInstance(controllers, entity, id).getCurrentState();
+  const currentState = getEntityInstance(
+    controllers,
+    entity,
+    id
+  ).getCurrentState();
 
-  const mergedState = mergeDeep(
-    mock,
-    entities[entity].instances[id].statesData[state]
-  );
+  if (currentState === "empty") return;
+
+  const state = returnState ?? currentState;
+
+  const stateData = entities[entity].instances[id].statesData[state];
+
+  const mergedState = mergeDeep(mock, stateData);
 
   entities[entity].instances[id].statesData[state] = mergedState;
 };

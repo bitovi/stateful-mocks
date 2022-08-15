@@ -29,12 +29,12 @@ const getEntityStateData = (
     ? entityInstance.getStateData(state)
     : entityInstance.getCurrentStateData();
 
-  const isEmptyResponse = !Boolean(Object.keys(response).length);
+  const isEmptyResponse = !Boolean(response && Object.keys(response).length);
 
   return isEmptyResponse ? null : response;
 };
 
-const refreshInstanceState = (
+export const refreshInstanceState = (
   { id, entity }: ResponseDefinition,
   stateControllers: Array<StateController>,
   entities

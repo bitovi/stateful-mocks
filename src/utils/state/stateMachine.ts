@@ -14,10 +14,8 @@ export class StateMachine {
   refreshState(statesData, machine) {
     const currentState = this.getCurrentState();
     const newMachine = createMachine(machine);
-
-    this.interpreter = interpret(newMachine).start();
+    this.interpreter = interpret(newMachine).start(currentState);
     this.statesData = statesData;
-    this.send(currentState);
   }
 
   getCurrentState() {

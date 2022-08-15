@@ -1,11 +1,11 @@
-import { parse } from 'graphql';
-import { saveNewRequestInConfig } from '../utils/config';
-import { getConfig, isSupportedRequest } from '../utils/graphql';
-import signale from 'signale';
+import { parse } from "graphql";
+import { saveNewRequestInConfig } from "../utils/config";
+import { getConfig, isSupportedRequest } from "../utils/graphql";
+import signale from "signale";
 import {
   ensureStateHasAllRequestFields,
   findRequest,
-} from '../utils/graphql/request';
+} from "../utils/graphql/request";
 
 export const interceptNewRequest = async (
   request,
@@ -14,7 +14,7 @@ export const interceptNewRequest = async (
   schemaFilePath
 ) => {
   if (request.body.query) {
-    signale.pending('interceptNewRequestMiddleware');
+    signale.pending("interceptNewRequestMiddleware");
     const parsedQuery: any = parse(request.body.query);
     //todo: refactor this; see why my utils doesn't work
     const requestName =
@@ -45,6 +45,6 @@ export const interceptNewRequest = async (
         schemaFilePath
       );
     }
-    signale.success('interceptNewRequestMiddleware');
+    signale.success("interceptNewRequestMiddleware");
   }
 };

@@ -1,3 +1,4 @@
+import { createMachine, interpret } from "xstate";
 import { ServerError } from "../errors/serverError";
 import { ConfigRequest } from "../interfaces/graphql";
 import { StateController } from "../interfaces/state";
@@ -6,7 +7,7 @@ import { getRequestName } from "../utils/graphql/request";
 import { deepEqual } from "../utils/object";
 import { getControllers } from "../utils/state/stateController";
 import { getEntityInstance } from "../utils/state/stateMachine";
-import { getResponseData } from "./getResponseData";
+import { getResponseData, refreshInstanceState } from "./getResponseData";
 
 interface Variables {
   input: { [key: string]: any };
@@ -21,7 +22,6 @@ const getRequestFromConfig = (
 
   return requests.find((request) => {
     const { variables: previousRequestVariables } = JSON.parse(request.body);
-
     return (
       getRequestName(request) === operationName &&
       deepEqual(variables, previousRequestVariables)
@@ -84,9 +84,7 @@ export const executeRequest = (
   if (stateChanges) {
     stateChanges.forEach(({ id, event, entity }) => {
       const entityInstance = getEntityInstance(updatedControllers, entity, id);
-      const { statesData } = entities[entity].instances[id];
-      const { stateMachine } = entities[entity];
-      entityInstance.refreshState(statesData, stateMachine);
+      refreshInstanceState({ id, entity }, updatedControllers, entities);
       entityInstance.send(event);
     });
   }

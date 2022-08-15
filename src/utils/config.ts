@@ -1,15 +1,15 @@
-import { parse } from 'graphql';
-import { hri } from 'human-readable-ids';
-import { createDirectory, existsDirectory, writeFile } from './io';
-import { ServerError } from '../errors/serverError';
-import { getMocks } from '../generator';
+import { parse } from "graphql";
+import { hri } from "human-readable-ids";
+import { createDirectory, existsDirectory, writeFile } from "./io";
+import { ServerError } from "../errors/serverError";
+import { getMocks } from "../generator";
 import {
   Config,
   ConfigRequest,
   Entity,
   ResponseDefinition,
-} from '../interfaces/graphql';
-import { getConfig, getSchemaFile } from './graphql';
+} from "../interfaces/graphql";
+import { getConfig, getSchemaFile } from "./graphql";
 
 //todo: find type for schema
 export const getEntityName = (
@@ -27,7 +27,7 @@ export const getEntityName = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === 'ListType') {
+  if (type.kind === "ListType") {
     return type.type.name.value;
   } else {
     return type.name.value;
@@ -58,7 +58,7 @@ export const isQueryList = (
     (field) => field.name.value === requestName
   );
 
-  if (type.kind === 'ListType') {
+  if (type.kind === "ListType") {
     return true;
   } else {
     return false;
@@ -66,7 +66,7 @@ export const isQueryList = (
 };
 
 const generateEventProperties = () => {
-  const stateName = hri.random().split('-')[0];
+  const stateName = hri.random().split("-")[0];
   const eventName = `make${stateName
     .slice(0, 1)
     .toUpperCase()}${stateName.slice(1)}`;
@@ -149,7 +149,7 @@ const formatNewRequest = (
   requestType: any,
   entities: { [key: string]: Entity }
 ): ConfigRequest => {
-  const [id] = Object.keys(entities[entity]?.instances ?? {});
+  const instancesIds = Object.keys(entities[entity]?.instances ?? {});
 
   const { states } = entities[entity].stateMachine;
   const lastAddedKey = Number([Object.keys(states).length - 1]);
@@ -159,26 +159,56 @@ const formatNewRequest = (
   const [event] = Object.keys(states[stateName].on);
 
   const body = JSON.stringify(requestBody);
-  const response: ResponseDefinition = {
-    entity,
-    id,
-  };
+  const response: ResponseDefinition | Array<ResponseDefinition> = isList
+    ? [
+        {
+          entity,
+          id: instancesIds[0],
+        },
+        {
+          entity,
+          id: instancesIds[1],
+        },
+      ]
+    : {
+        entity,
+        id: instancesIds[0],
+      };
 
   let newRequest: ConfigRequest = {
     body,
-    response: isList ? [response] : response,
+    response,
   };
 
-  if (requestType === 'mutation') {
-    response.state = stateName;
+  if (requestType === "mutation") {
+    if (Array.isArray(response)) {
+      response.map((responsePart) => {
+        responsePart.state = stateName;
 
-    newRequest.stateChanges = [
-      {
-        entity,
-        id,
-        event,
-      },
-    ];
+        newRequest.stateChanges = [
+          {
+            entity,
+            id: instancesIds[0],
+            event,
+          },
+          {
+            entity,
+            id: instancesIds[1],
+            event,
+          },
+        ];
+      });
+    } else {
+      response.state = stateName;
+
+      newRequest.stateChanges = [
+        {
+          entity,
+          id: instancesIds[0],
+          event,
+        },
+      ];
+    }
   }
 
   return newRequest;
@@ -220,6 +250,7 @@ export const saveNewRequestInConfig = async (
 
     if (isList) {
       const { stateName, eventName } = generateEventProperties();
+      const { initial } = entities[entity].stateMachine;
 
       //todo: refactor this into util func that doesn't relay on array position
       const instancesOfEntity = Object.keys(entities[entity].instances);
@@ -232,7 +263,7 @@ export const saveNewRequestInConfig = async (
           ...entities[entity].instances,
           [secondInstanceId]: {
             statesData: {
-              [stateName]: {},
+              [initial]: {},
             },
           },
         };
@@ -243,7 +274,7 @@ export const saveNewRequestInConfig = async (
       };
       entities[entity].instances[firstInstanceId].statesData[stateName] =
         mock?.length ? mock[0] : {};
-      entities[entity].instances[secondInstanceId].statesData[stateName] =
+      entities[entity].instances[secondInstanceId].statesData[initial] =
         mock?.length ? mock[1] : {};
     } else {
       const id = Object.keys(entities[entity].instances)[0];
@@ -297,8 +328,8 @@ export const ensureConfigFileExists = async (
 };
 
 const ensureFileDirectoryExits = (filePath: string) => {
-  if (filePath.includes('/')) {
-    const directoriesPath = filePath.substr(0, filePath.lastIndexOf('/'));
+  if (filePath.includes("/")) {
+    const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
     createDirectory(directoriesPath);
   }
 };
