@@ -10,12 +10,12 @@ import {
 } from "../interfaces/graphql";
 import { getConfig, getSchemaFile } from "./graphql";
 import { getTypeDefinitionForRequest, isQueryList } from "./graphql/request";
-
-//todo: find type for schema
+import { GraphQLSchema } from "graphql";
+ 
 export const getEntityName = (
   requestName: string,
   requestType: string,
-  schema: any
+  schema: GraphQLSchema 
 ) => {
   const type = getTypeDefinitionForRequest(requestName, requestType, schema)
 

@@ -1,13 +1,14 @@
 import fs from "fs";
+import { GraphQLSchema } from "graphql";
 import { parse } from "graphql";
 import { Config, RequestSpecifications } from "../../interfaces/graphql";
 import { readFile } from "../io";
 
-export const getSchemaFile = (schemaFilePath: string): string => {
+export const getSchemaFile = (schemaFilePath: string): GraphQLSchema => {
   return fs.readFileSync(
     `${process.cwd()}/${schemaFilePath}`,
     "utf8"
-  ) as unknown as string;
+  ) as unknown as GraphQLSchema;
 };
 
 export const getConfig = (configFilePath: string): Config => {

@@ -1,4 +1,4 @@
-import { parse } from "graphql";
+import { GraphQLSchema, parse } from "graphql";
 import signale from "signale";
 import { getConfig, getSchemaFile } from ".";
 import { getMocks } from "../../generator";
@@ -159,7 +159,7 @@ const mockMissingInstanceFields = async (
   entities[entity].instances[id].statesData[state] = mergedState;
 };
   
-export const getTypeDefinitionForRequest = (requestName: string, requestType: string, schema: any,) => {
+export const getTypeDefinitionForRequest = (requestName: string, requestType: string, schema: GraphQLSchema,) => {
   const schemaParsed: any = parse(String(schema));
   const typeDefinitions = schemaParsed.definitions.find(
     (definition) => definition.name.value.toLowerCase() === requestType
@@ -183,7 +183,7 @@ export const getRequestFields = ({ body }: ConfigRequest) => {
 export const isQueryList = (
   requestName: string,
   requestType: string,
-  schema: any
+  schema: GraphQLSchema 
 ) => {
 
   const type = getTypeDefinitionForRequest(requestName, requestType, schema)
