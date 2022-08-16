@@ -1,4 +1,5 @@
 import { parse } from "graphql";
+import signale from "signale";
 import { getConfig, getSchemaFile } from ".";
 import { getMocks } from "../../generator";
 import { ConfigRequest } from "../../interfaces/graphql";
@@ -7,7 +8,6 @@ import { getEntityName, writeNewConfig } from "../config";
 import { deepEqual, mergeDeep } from "../object";
 import { getControllers } from "../state/stateController";
 import { getEntityInstance } from "../state/stateMachine";
-import signale from "signale";
 
 //todo: check in next standup: I think the return type from parse set by graphql may be mistaken; it's probably OperationDefinitionNode in some cases
 const getParsedQuery = (request: ConfigRequest): any => {
@@ -45,15 +45,7 @@ export const findRequest = (
       deepEqual(variables, previousRequestVariables)
     );
   });
-};
-
-const getRequestFields = ({ body }: ConfigRequest) => {
-  const definition: any = parse(String(body.query)).definitions[0];
-
-  return definition.selectionSet.selections[0].selectionSet.selections.map(
-    (field) => field.name.value
-  );
-};
+}; 
 
 export const ensureStateHasAllRequestFields = async (
   request,
@@ -165,4 +157,40 @@ const mockMissingInstanceFields = async (
   const mergedState = mergeDeep(mock, stateData);
 
   entities[entity].instances[id].statesData[state] = mergedState;
+};
+  
+export const getTypeDefinitionForRequest = (requestName: string, requestType: string, schema: any,) => {
+  const schemaParsed: any = parse(String(schema));
+  const typeDefinitions = schemaParsed.definitions.find(
+    (definition) => definition.name.value.toLowerCase() === requestType
+  );
+  const { type } = typeDefinitions.fields.find(
+    (field) => field.name.value === requestName
+  );
+
+  return type;
+}
+
+export const getRequestFields = ({ body }: ConfigRequest) => {
+  //todo: find type for definition
+  const definition: any = parse(String(body.query)).definitions[0];
+
+  return definition.selectionSet.selections[0].selectionSet.selections.map(
+    (field) => field.name.value
+  );
+};
+
+export const isQueryList = (
+  requestName: string,
+  requestType: string,
+  schema: any
+) => {
+
+  const type = getTypeDefinitionForRequest(requestName, requestType, schema)
+
+  if (type.kind === "ListType") {
+    return true;
+  } else {
+    return false;
+  }
 };

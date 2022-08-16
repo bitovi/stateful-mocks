@@ -1,5 +1,4 @@
-import { parse } from "graphql";
-import { hri } from "human-readable-ids";
+ import { hri } from "human-readable-ids";
 import { createDirectory, existsDirectory, writeFile } from "./io";
 import { ServerError } from "../errors/serverError";
 import { getMocks } from "../generator";
@@ -10,6 +9,7 @@ import {
   ResponseDefinition,
 } from "../interfaces/graphql";
 import { getConfig, getSchemaFile } from "./graphql";
+import { getTypeDefinitionForRequest, isQueryList } from "./graphql/request";
 
 //todo: find type for schema
 export const getEntityName = (
@@ -17,51 +17,12 @@ export const getEntityName = (
   requestType: string,
   schema: any
 ) => {
-  const schemaParsed: any = parse(String(schema));
-
-  const typeDefinitions = schemaParsed.definitions.find(
-    (definition) => definition.name.value.toLowerCase() === requestType
-  );
-
-  const { type } = typeDefinitions.fields.find(
-    (field) => field.name.value === requestName
-  );
+  const type = getTypeDefinitionForRequest(requestName, requestType, schema)
 
   if (type.kind === "ListType") {
     return type.type.name.value;
   } else {
     return type.name.value;
-  }
-};
-
-export const getRequestFields = ({ body }: ConfigRequest) => {
-  //todo: find type for definition
-  const definition: any = parse(String(body.query)).definitions[0];
-
-  return definition.selectionSet.selections[0].selectionSet.selections.map(
-    (field) => field.name.value
-  );
-};
-
-export const isQueryList = (
-  requestName: string,
-  requestType: string,
-  schema: any
-) => {
-  const schemaParsed: any = parse(String(schema));
-
-  const typeDefinitions = schemaParsed.definitions.find(
-    (definition) => definition.name.value.toLowerCase() === requestType
-  );
-
-  const { type } = typeDefinitions.fields.find(
-    (field) => field.name.value === requestName
-  );
-
-  if (type.kind === "ListType") {
-    return true;
-  } else {
-    return false;
   }
 };
 
@@ -161,19 +122,19 @@ const formatNewRequest = (
   const body = JSON.stringify(requestBody);
   const response: ResponseDefinition | Array<ResponseDefinition> = isList
     ? [
-        {
-          entity,
-          id: instancesIds[0],
-        },
-        {
-          entity,
-          id: instancesIds[1],
-        },
-      ]
-    : {
+      {
         entity,
         id: instancesIds[0],
-      };
+      },
+      {
+        entity,
+        id: instancesIds[1],
+      },
+    ]
+    : {
+      entity,
+      id: instancesIds[0],
+    };
 
   let newRequest: ConfigRequest = {
     body,
