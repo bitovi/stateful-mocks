@@ -4,7 +4,7 @@ export interface ResponseDefinition {
   state?: string;
 }
 
-export interface StateChangesDefinition {
+export interface StateChangeDefinition {
   id: string;
   event: string;
   entity: string;
@@ -14,37 +14,42 @@ export interface StateChangesDefinition {
 export interface ConfigRequest {
   body: any;
   response: ResponseDefinition | Array<ResponseDefinition>;
-  stateChanges?: Array<StateChangesDefinition>;
+  stateChanges?: Array<StateChangeDefinition>;
 }
 
 //todo: find correct type for query or generate with tool
 export interface GraphqlRequestBody {
   query: unknown;
-  variables: { [key: string]: any };
+  variables: Record<string, unknown>;
   operationName?: string;
 }
 
 export interface Machine {
   initial: string;
-  states: { [key: string]: any };
+  states: Record<string, any>;
 }
 
 export interface Entity {
   stateMachine: Machine;
-  instances: /* { [key: string]: Instance }; */ any;
+  instances: Record<string, Instance>;
 }
 
-//todo: fix instance type
 type Instance = {
-  statesData: { [key: string]: unknown };
+  statesData: Record<string, any>;
 };
 
+export type Entities = Record<string, Entity>;
+
 export interface Config {
-  entities: { [key: string]: Entity };
+  entities: Entities;
   requests: Array<ConfigRequest>;
 }
 
 export interface RequestSpecifications {
   name: string;
   type: string;
+}
+
+export interface Variables {
+  input: Record<string, unknown>;
 }

@@ -1,6 +1,5 @@
-import { createMachine, interpret } from "xstate";
 import { ServerError } from "../errors/serverError";
-import { ConfigRequest } from "../interfaces/graphql";
+import { ConfigRequest, Variables } from "../interfaces/graphql";
 import { StateController } from "../interfaces/state";
 import { getConfig } from "../utils/graphql";
 import { getRequestName } from "../utils/graphql/request";
@@ -8,10 +7,6 @@ import { deepEqual } from "../utils/object";
 import { getControllers } from "../utils/state/stateController";
 import { getEntityInstance } from "../utils/state/stateMachine";
 import { getResponseData, refreshInstanceState } from "./getResponseData";
-
-interface Variables {
-  input: { [key: string]: any };
-}
 
 const getRequestFromConfig = (
   operationName: string,

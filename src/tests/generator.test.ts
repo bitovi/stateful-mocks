@@ -1,11 +1,12 @@
 import { readFileSync } from "fs";
+import { GraphQLSchema } from "graphql";
 import path from "path";
 import { getMocks } from "../generator";
 
 const schema = readFileSync(
   path.join(__dirname, "./resources/testSchema.graphql"),
   "utf8"
-);
+) as unknown as GraphQLSchema;
 
 describe("getMocks", () => {
   const item2SubQuery = `

@@ -1,38 +1,38 @@
- import { hri } from "human-readable-ids";
+import { hri } from "human-readable-ids";
+import { GraphQLSchema } from "graphql";
 import { createDirectory, existsDirectory, writeFile } from "./io";
 import { ServerError } from "../errors/serverError";
 import { getMocks } from "../generator";
 import {
   Config,
   ConfigRequest,
+  Entities,
   Entity,
   ResponseDefinition,
 } from "../interfaces/graphql";
 import { getConfig, getSchemaFile } from "./graphql";
 import { getTypeDefinitionForRequest, isQueryList } from "./graphql/request";
-import { GraphQLSchema } from "graphql";
- 
+import { generateEventProperties, mockStateMachine } from "./mocks";
+
+interface NewRequestConfiguration {
+  entity: string;
+  isList: boolean;
+  requestType: any;
+  entities: Entities;
+}
+
 export const getEntityName = (
   requestName: string,
   requestType: string,
-  schema: GraphQLSchema 
+  schema: GraphQLSchema
 ) => {
-  const type = getTypeDefinitionForRequest(requestName, requestType, schema)
+  const type = getTypeDefinitionForRequest(requestName, requestType, schema);
 
   if (type.kind === "ListType") {
     return type.type.name.value;
   } else {
     return type.name.value;
   }
-};
-
-const generateEventProperties = () => {
-  const stateName = hri.random().split("-")[0];
-  const eventName = `make${stateName
-    .slice(0, 1)
-    .toUpperCase()}${stateName.slice(1)}`;
-
-  return { stateName, eventName };
 };
 
 export const getNewEntity = async (
@@ -47,23 +47,15 @@ export const getNewEntity = async (
     variables,
   });
 
+  const { stateName, eventName } = generateEventProperties();
+  const stateMachine = mockStateMachine(stateName, eventName);
+
   if (isList) {
     const firstInstanceId = hri.random();
     const secondInstanceId = hri.random();
 
-    const { stateName, eventName } = generateEventProperties();
     return {
-      stateMachine: {
-        initial: stateName,
-        states: {
-          empty: {},
-          [stateName]: {
-            on: {
-              [eventName]: stateName,
-            },
-          },
-        },
-      },
+      stateMachine,
       instances: {
         [firstInstanceId]: {
           statesData: {
@@ -79,19 +71,9 @@ export const getNewEntity = async (
     };
   } else {
     const id = hri.random();
-    const { stateName, eventName } = generateEventProperties();
+
     return {
-      stateMachine: {
-        initial: stateName,
-        states: {
-          empty: {},
-          [stateName]: {
-            on: {
-              [eventName]: stateName,
-            },
-          },
-        },
-      },
+      stateMachine,
       instances: {
         [id]: {
           statesData: {
@@ -105,36 +87,22 @@ export const getNewEntity = async (
 
 const formatNewRequest = (
   requestBody: any,
-  entity: string,
-  isList: boolean,
-  requestType: any,
-  entities: { [key: string]: Entity }
+  config: NewRequestConfiguration
 ): ConfigRequest => {
-  const instancesIds = Object.keys(entities[entity]?.instances ?? {});
-
+  const { entity, isList, requestType, entities } = config;
+  const [firstId, secondId] = Object.keys(entities[entity]?.instances ?? {});
   const { states } = entities[entity].stateMachine;
   const lastAddedKey = Number([Object.keys(states).length - 1]);
-
   const stateName = Object.keys(states)[lastAddedKey];
-
   const [event] = Object.keys(states[stateName].on);
 
   const body = JSON.stringify(requestBody);
   const response: ResponseDefinition | Array<ResponseDefinition> = isList
     ? [
-      {
-        entity,
-        id: instancesIds[0],
-      },
-      {
-        entity,
-        id: instancesIds[1],
-      },
-    ]
-    : {
-      entity,
-      id: instancesIds[0],
-    };
+        { entity, id: firstId },
+        { entity, id: secondId },
+      ]
+    : { entity, id: firstId };
 
   let newRequest: ConfigRequest = {
     body,
@@ -147,28 +115,14 @@ const formatNewRequest = (
         responsePart.state = stateName;
 
         newRequest.stateChanges = [
-          {
-            entity,
-            id: instancesIds[0],
-            event,
-          },
-          {
-            entity,
-            id: instancesIds[1],
-            event,
-          },
+          { entity, id: firstId, event },
+          { entity, id: secondId, event },
         ];
       });
     } else {
       response.state = stateName;
 
-      newRequest.stateChanges = [
-        {
-          entity,
-          id: instancesIds[0],
-          event,
-        },
-      ];
+      newRequest.stateChanges = [{ entity, id: firstId, event }];
     }
   }
 
@@ -250,13 +204,12 @@ export const saveNewRequestInConfig = async (
     }
   }
 
-  const newRequest = formatNewRequest(
-    requestBody,
+  const newRequest = formatNewRequest(requestBody, {
     entity,
     isList,
     requestType,
-    entities
-  );
+    entities,
+  });
   requests.push(newRequest);
 
   await writeNewConfig({ entities, requests }, configFilePath);
