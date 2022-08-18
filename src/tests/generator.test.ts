@@ -1,11 +1,12 @@
 import { readFileSync } from "fs";
+import { GraphQLSchema } from "graphql";
 import path from "path";
 import { getMocks } from "../generator";
 
 const schema = readFileSync(
   path.join(__dirname, "./resources/testSchema.graphql"),
   "utf8"
-);
+) as unknown as GraphQLSchema;
 
 describe("getMocks", () => {
   const item2SubQuery = `
@@ -37,7 +38,7 @@ describe("getMocks", () => {
     item1: item2ExpectedObject,
   };
 
-  const testCases = [
+  const queryTestCases = [
     {
       title: "Return string scalar",
       subQuery: "text",
@@ -117,7 +118,7 @@ describe("getMocks", () => {
     },
   ];
 
-  test.concurrent.each(testCases)(
+  test.concurrent.each(queryTestCases)(
     "$title",
     async ({ subQuery, expectedResult }) => {
       const query = `
@@ -131,6 +132,58 @@ describe("getMocks", () => {
       const mockedData = await getMocks({
         query,
         schema,
+      });
+
+      expect(mockedData).toEqual(expectedResult);
+    }
+  );
+
+  const mutationTestCases = [
+    {
+      title: "Create a person and return their name",
+      subMutation: `Mutation($input: CreatePersonInput!)`,
+      subQuery: `createPerson(input: $input) {
+        name
+      }`,
+      expectedResult: {
+        name: expect.any(String),
+      },
+      variables: {
+        name: "name",
+        age: 123,
+      },
+    },
+    {
+      title: "Create a person and return their name and age",
+      subMutation: `Mutation($input: CreatePersonInput!)`,
+      subQuery: `createPerson(input: $input) {
+        name
+        age
+      }`,
+      expectedResult: {
+        name: expect.any(String),
+        age: expect.any(Number),
+      },
+      variables: {
+        name: "name",
+        age: 1,
+      },
+    },
+  ];
+
+  test.concurrent.each(mutationTestCases)(
+    "$title",
+    async ({ subQuery, subMutation, expectedResult, variables }) => {
+      const query = `
+      mutation ${subMutation} {
+           ${subQuery}
+      }
+      `;
+
+      const mockedData = await getMocks({
+        query,
+        schema,
+        variables: { input: variables },
       });
 
       expect(mockedData).toEqual(expectedResult);

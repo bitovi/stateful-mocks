@@ -1,19 +1,27 @@
 import { ServerError } from "../errors/serverError";
-import { ConfigRequest } from "../interfaces/graphql";
+import { ConfigRequest, Variables } from "../interfaces/graphql";
 import { StateController } from "../interfaces/state";
 import { getConfig } from "../utils/graphql";
 import { getRequestName } from "../utils/graphql/request";
+import { deepEqual } from "../utils/object";
 import { getControllers } from "../utils/state/stateController";
 import { getEntityInstance } from "../utils/state/stateMachine";
-import { getResponseData } from "./getResponseData";
+import { getResponseData, refreshInstanceState } from "./getResponseData";
 
 const getRequestFromConfig = (
   operationName: string,
+  variables: Variables,
   configFilePath: string
-) => {
+): ConfigRequest | undefined => {
   const { requests } = getConfig(configFilePath);
 
-  return requests.find((request) => getRequestName(request) === operationName);
+  return requests.find((request) => {
+    const { variables: previousRequestVariables } = JSON.parse(request.body);
+    return (
+      getRequestName(request) === operationName &&
+      deepEqual(variables, previousRequestVariables)
+    );
+  });
 };
 
 export const getConfigRequestsNames = (requests: Array<ConfigRequest>) => {
@@ -45,15 +53,21 @@ const ensureControllersAreUpdated = (
 
 export const executeRequest = (
   operationName: string,
+  variables: Variables,
   configFilePath: string,
   controllers: Array<StateController>
 ) => {
-  const request = getRequestFromConfig(operationName, configFilePath);
+  const request = getRequestFromConfig(
+    operationName,
+    variables,
+    configFilePath
+  );
 
   const updatedControllers = ensureControllersAreUpdated(
     controllers,
     configFilePath
   );
+  const { entities } = getConfig(configFilePath);
 
   if (!request) {
     throw new ServerError(
@@ -65,9 +79,10 @@ export const executeRequest = (
   if (stateChanges) {
     stateChanges.forEach(({ id, event, entity }) => {
       const entityInstance = getEntityInstance(updatedControllers, entity, id);
-
+      refreshInstanceState({ id, entity }, updatedControllers, entities);
       entityInstance.send(event);
     });
   }
-  return getResponseData(response, updatedControllers);
+
+  return getResponseData(response, updatedControllers, entities);
 };

@@ -11,6 +11,13 @@ export class StateMachine {
     this.statesData = statesData;
   }
 
+  refreshState(statesData, machine) {
+    const currentState = this.getCurrentState();
+    const newMachine = createMachine(machine);
+    this.interpreter = interpret(newMachine).start(currentState);
+    this.statesData = statesData;
+  }
+
   getCurrentState() {
     return this.interpreter.state.value;
   }

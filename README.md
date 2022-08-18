@@ -1,29 +1,21 @@
 # stateful-mocks
 
+This library is designed to simulate a GraphQL (and Restful in the future) server and generate stateful mocks
+for your resolvers based in your schema.graphql. Through a custom file called config.json you can describe
+exactly what state mutations should happen when you make a request and what data those states represent.
+
 ## Usage
+
+In a node project already containing your schema.graphql, run:
+
+```
+npm install @bitovi/stateful-mocks
+npx @bitovi/stateful-mocks -s schema.graphql -p 3000
+```
 
 ### Stateful Mock Server
 
 Coming soon!
-
-### Mock Data Generator
-
-```
-$ npm i @bitovi/stateful-mocks
-
-$ npx sms --help
-Usage: sms [options] [command]
-
-CLI for the stateful mocks server(sms)
-
-Options:
-  -V, --version   output the version number
-  -h, --help      display help for command
-
-Commands:
-  run [options]   CLI to run mock server
-  help [command]  display help for command
-```
 
 ## Releasing a new version
 

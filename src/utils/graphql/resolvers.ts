@@ -21,8 +21,13 @@ export const buildResolvers = (
         ...resolvers,
         [type]: {
           ...resolvers[type],
-          [name]() {
-            return executeRequest(name, configFilePath, controllers);
+          [name](_parent, _args, _context, info) {
+            return executeRequest(
+              name,
+              info.variableValues,
+              configFilePath,
+              controllers
+            );
           },
         },
       };
