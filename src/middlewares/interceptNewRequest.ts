@@ -1,8 +1,10 @@
 import { parse } from "graphql";
-import { RequestSpecifications } from "../interfaces/graphql";
-import { getConfigRequestsNames } from "../services/request";
-import { isQueryList, updateConfig } from "../utils/config";
-import { getConfig, getSupportedRequests, getFile } from "../utils/graphql";
+import { saveNewRequestInConfig } from "../utils/config";
+import { getConfig, isSupportedRequest } from "../utils/graphql";
+import {
+  ensureStateHasAllRequestFields,
+  findRequest,
+} from "../utils/graphql/request";
 
 export const interceptNewRequest = async (
   request,
@@ -17,29 +19,28 @@ export const interceptNewRequest = async (
       parsedQuery.definitions[0].selectionSet.selections[0].name.value;
     const requestType = parsedQuery.definitions[0].operation;
 
-    const supportedRequests: Array<RequestSpecifications> =
-      getSupportedRequests(schemaFilePath);
+    let { requests } = getConfig(configFilePath);
+    const matchingRequestFromConfig = findRequest(requests, request);
+    const isNewRequest = !!!matchingRequestFromConfig;
 
-    const { requests } = getConfig(configFilePath);
-    const requestsNames = getConfigRequestsNames(requests);
-    const isNewRequest = !requestsNames.includes(requestName);
-
-    if (
-      supportedRequests.some((request) => request.name === requestName) &&
-      isNewRequest
-    ) {
-      const isList = isQueryList(
+    if (!isNewRequest) {
+      await ensureStateHasAllRequestFields(
+        request,
+        configFilePath,
+        schemaFilePath,
+        matchingRequestFromConfig,
         requestName,
-        requestType,
-        getFile(schemaFilePath)
+        requestType
       );
-      await updateConfig(
+    }
+
+    if (isSupportedRequest(requestName, schemaFilePath) && isNewRequest) {
+      await saveNewRequestInConfig(
         request,
         requestName,
         requestType,
         configFilePath,
-        schemaFilePath,
-        isList
+        schemaFilePath
       );
     }
   }

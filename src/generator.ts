@@ -1,3 +1,5 @@
+import { GraphQLSchema } from "graphql";
+
 const { mockServer } = require("@graphql-tools/mock");
 const casual = require("casual");
 const { parse } = require("graphql");
@@ -60,7 +62,7 @@ const getMock = (data: { [key: string]: any }) => {
   return data;
 };
 
-const resolveScalars = (schema: string) => {
+const resolveScalars = (schema: GraphQLSchema) => {
   const ast = parse(schema);
 
   let scalars = {};
@@ -80,7 +82,7 @@ const getMocks = async ({
   variables,
 }: {
   query: string;
-  schema: string;
+  schema: GraphQLSchema;
   variables?: {
     [key: string]: any;
   };

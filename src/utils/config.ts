@@ -1,28 +1,32 @@
-import fs from "fs";
-import { parse } from "graphql";
 import { hri } from "human-readable-ids";
-
+import { GraphQLSchema } from "graphql";
+import { createDirectory, existsDirectory, writeFile } from "./io";
 import { ServerError } from "../errors/serverError";
 import { getMocks } from "../generator";
-import { Config, ConfigRequest } from "../interfaces/graphql";
-import { getConfig, getFile } from "./graphql";
-const fsPromises = fs.promises;
+import {
+  Config,
+  ConfigRequest,
+  Entities,
+  Entity,
+  ResponseDefinition,
+} from "../interfaces/graphql";
+import { getConfig, getSchemaFile } from "./graphql";
+import { getTypeDefinitionForRequest, isQueryList } from "./graphql/request";
+import { generateEventProperties, mockStateMachine } from "./mocks";
 
-//todo: find type for schema
-const getEntityName = (
+interface NewRequestConfiguration {
+  entity: string;
+  isList: boolean;
+  requestType: any;
+  entities: Entities;
+}
+
+export const getEntityName = (
   requestName: string,
   requestType: string,
-  schema: any
+  schema: GraphQLSchema
 ) => {
-  const schemaParsed: any = parse(String(schema));
-
-  const typeDefinitions = schemaParsed.definitions.find(
-    (definition) => definition.name.value.toLowerCase() === requestType
-  );
-
-  const { type } = typeDefinitions.fields.find(
-    (field) => field.name.value === requestName
-  );
+  const type = getTypeDefinitionForRequest(requestName, requestType, schema);
 
   if (type.kind === "ListType") {
     return type.type.name.value;
@@ -31,149 +35,192 @@ const getEntityName = (
   }
 };
 
-export const isQueryList = (
-  requestName: string,
-  requestType: string,
-  schema: any
-) => {
-  const schemaParsed: any = parse(String(schema));
-
-  const typeDefinitions = schemaParsed.definitions.find(
-    (definition) => definition.name.value.toLowerCase() === requestType
-  );
-
-  const { type } = typeDefinitions.fields.find(
-    (field) => field.name.value === requestName
-  );
-
-  if (type.kind === "ListType") {
-    return true;
-  } else {
-    return false;
-  }
-};
-
-export const updateConfig = async (
-  request: ConfigRequest,
-  requestName: string,
-  requestType: string,
-  configFilePath: string,
-  schemaFilePath: string,
+export const getNewEntity = async (
+  query,
+  schema,
+  variables,
   isList: boolean
-) => {
-  const schema = getFile(schemaFilePath);
-  const config = getConfig(configFilePath);
-  let { requests, entities } = config;
+): Promise<Entity> => {
+  const mock = await getMocks({
+    query,
+    schema,
+    variables,
+  });
 
-  const entity = getEntityName(requestName, requestType, schema);
+  const { stateName, eventName } = generateEventProperties();
+  const stateMachine = mockStateMachine(stateName, eventName);
 
-  //todo: implement id to stop using first entity, always
-  const [entityInstance] = Object.keys(entities[entity]?.instances ?? {});
+  if (isList) {
+    const firstInstanceId = hri.random();
+    const secondInstanceId = hri.random();
 
-  //todo: refactor; this is quite crude
-  if (entityInstance) {
-    const [entityStates] = Object.keys(entities[entity].stateMachine.states);
-
-    const body = JSON.stringify(request.body);
-    const response = {
-      entity,
-      id: entityInstance,
-      state: entityStates,
-    };
-    //todo: refactor this; too similar logic
-    let newRequest: ConfigRequest = {
-      body,
-      response: isList ? [response] : response,
-    };
-
-    if (requestType === "mutation") {
-      newRequest.stateChanges = [
-        {
-          entity,
-          id: entityInstance,
-          event: requestName,
-        },
-      ];
-    }
-
-    requests.push(newRequest);
-  } else {
-    const { query } = request.body;
-
-    const mock = await getMocks({
-      query,
-      schema,
-    });
-
-    const instanceId = hri.random();
-    const stateName = hri.random().split("-")[0];
-    const eventName = `make${stateName
-      .slice(0, 1)
-      .toUpperCase()}${stateName.slice(1)}`;
-
-    entities = {
-      [entity]: {
-        stateMachine: {
-          initial: stateName,
-          states: {
-            empty: {},
-            [stateName]: {
-              on: {
-                [eventName]: stateName,
-              },
-            },
+    return {
+      stateMachine,
+      instances: {
+        [firstInstanceId]: {
+          statesData: {
+            [stateName]: mock?.length ? mock[0] : {},
           },
         },
-        instances: {
-          [instanceId]: {
-            statesData: {
-              [stateName]: mock,
-            },
+        [secondInstanceId]: {
+          statesData: {
+            [stateName]: mock?.length ? mock[1] : {},
           },
         },
       },
     };
+  } else {
+    const id = hri.random();
 
-    const body = JSON.stringify(request.body);
-
-    const response: any = {
-      entity,
-      id: instanceId,
-    };
-
-    if (requestType === "mutation") {
-      response.state = stateName;
-    }
-
-    let newRequest: ConfigRequest = {
-      body,
-      response: isList ? [response] : response,
-    };
-
-    if (requestType === "mutation") {
-      newRequest.stateChanges = [
-        {
-          entity,
-          id: instanceId,
-          event: eventName,
+    return {
+      stateMachine,
+      instances: {
+        [id]: {
+          statesData: {
+            [stateName]: mock,
+          },
         },
-      ];
-    }
-    requests.push(newRequest);
+      },
+    };
   }
-
-  config.entities = entities;
-  config.requests = requests;
-
-  await writeNewConfig(config, configFilePath);
 };
 
-const writeNewConfig = async (
+const formatNewRequest = (
+  requestBody: any,
+  config: NewRequestConfiguration
+): ConfigRequest => {
+  const { entity, isList, requestType, entities } = config;
+  const [firstId, secondId] = Object.keys(entities[entity]?.instances ?? {});
+  const { states } = entities[entity].stateMachine;
+  const lastAddedKey = Number([Object.keys(states).length - 1]);
+  const stateName = Object.keys(states)[lastAddedKey];
+  const [event] = Object.keys(states[stateName].on);
+
+  const body = JSON.stringify(requestBody);
+  const response: ResponseDefinition | Array<ResponseDefinition> = isList
+    ? [
+        { entity, id: firstId },
+        { entity, id: secondId },
+      ]
+    : { entity, id: firstId };
+
+  let newRequest: ConfigRequest = {
+    body,
+    response,
+  };
+
+  if (requestType === "mutation") {
+    if (Array.isArray(response)) {
+      response.map((responsePart) => {
+        responsePart.state = stateName;
+
+        newRequest.stateChanges = [
+          { entity, id: firstId, event },
+          { entity, id: secondId, event },
+        ];
+      });
+    } else {
+      response.state = stateName;
+
+      newRequest.stateChanges = [{ entity, id: firstId, event }];
+    }
+  }
+
+  return newRequest;
+};
+
+export const saveNewRequestInConfig = async (
+  { body: requestBody }: any,
+  requestName: string,
+  requestType: string,
+  configFilePath: string,
+  schemaFilePath: string
+) => {
+  const schema = getSchemaFile(schemaFilePath);
+  const config = getConfig(configFilePath);
+  let { entities, requests } = config;
+  const { query, variables } = requestBody;
+  const isList = isQueryList(
+    requestName,
+    requestType,
+    getSchemaFile(schemaFilePath)
+  );
+
+  const entity = getEntityName(requestName, requestType, schema);
+
+  const isNewEntity = !Boolean(
+    Object.keys(entities[entity]?.instances ?? {}).length
+  );
+
+  if (isNewEntity) {
+    const newEntity = await getNewEntity(query, schema, variables, isList);
+
+    entities = { ...entities, [entity]: newEntity };
+  } else {
+    const mock = await getMocks({
+      query,
+      schema,
+      variables,
+    });
+
+    if (isList) {
+      const { stateName, eventName } = generateEventProperties();
+      const { initial } = entities[entity].stateMachine;
+
+      //todo: refactor this into util func that doesn't relay on array position
+      const instancesOfEntity = Object.keys(entities[entity].instances);
+      const firstInstanceId = instancesOfEntity[0];
+      const secondInstanceId =
+        instancesOfEntity.length < 2 ? hri.random() : instancesOfEntity[1];
+
+      if (instancesOfEntity.length < 2) {
+        entities[entity].instances = {
+          ...entities[entity].instances,
+          [secondInstanceId]: {
+            statesData: {
+              [initial]: {},
+            },
+          },
+        };
+      }
+
+      entities[entity].stateMachine.states[stateName] = {
+        on: { [eventName]: stateName },
+      };
+      entities[entity].instances[firstInstanceId].statesData[stateName] =
+        mock?.length ? mock[0] : {};
+      entities[entity].instances[secondInstanceId].statesData[initial] =
+        mock?.length ? mock[1] : {};
+    } else {
+      const id = Object.keys(entities[entity].instances)[0];
+
+      const { stateName, eventName } = generateEventProperties();
+
+      entities[entity].stateMachine.states[stateName] = {
+        on: { [eventName]: stateName },
+      };
+
+      entities[entity].instances[id].statesData[stateName] = mock;
+    }
+  }
+
+  const newRequest = formatNewRequest(requestBody, {
+    entity,
+    isList,
+    requestType,
+    entities,
+  });
+  requests.push(newRequest);
+
+  await writeNewConfig({ entities, requests }, configFilePath);
+};
+
+export const writeNewConfig = async (
   config: Config,
   configFilePath: string
 ): Promise<void> => {
   try {
-    await fsPromises.writeFile(configFilePath, JSON.stringify(config, null, 3));
+    await writeFile(configFilePath, JSON.stringify(config, null, 3));
   } catch (error: unknown) {
     throw new ServerError();
   }
@@ -182,9 +229,9 @@ export const ensureConfigFileExists = async (
   configFilePath: string
 ): Promise<void> => {
   const absolutePath = `${process.cwd()}/${configFilePath}`;
-  const validPath = fs.existsSync(absolutePath);
+  const isValidPath = existsDirectory(absolutePath);
 
-  if (!validPath) {
+  if (!isValidPath) {
     ensureFileDirectoryExits(configFilePath);
     const config = {
       entities: {},
@@ -197,7 +244,6 @@ export const ensureConfigFileExists = async (
 const ensureFileDirectoryExits = (filePath: string) => {
   if (filePath.includes("/")) {
     const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
-
-    fs.mkdirSync(directoriesPath, { recursive: true });
+    createDirectory(directoriesPath);
   }
 };

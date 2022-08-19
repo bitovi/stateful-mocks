@@ -2,3 +2,4 @@ node_modules
 demo/config.json
 **/*.log
 dist
+.DS_Store

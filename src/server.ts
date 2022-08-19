@@ -1,10 +1,10 @@
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer, ExpressContext } from "apollo-server-express";
 import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
 import express from "express";
-import http from "http";
+import http, { Server } from "http";
 import bodyParser from "body-parser";
 
-import { getFile } from "./utils/graphql";
+import { getSchemaFile } from "./utils/graphql";
 import { buildResolvers } from "./utils/graphql/resolvers";
 import { interceptNewRequest } from "./middlewares/interceptNewRequest";
 import { ensureConfigFileExists } from "./utils/config";
@@ -14,14 +14,29 @@ export async function startApolloServer(
   schemaFilePath: string,
   port: number = 4000
 ) {
-  ensureConfigFileExists(configFilePath);
+  const { apolloServer, httpServer } = await buildApolloServer(
+    configFilePath,
+    schemaFilePath
+  );
+  await new Promise((resolve: any) => httpServer.listen({ port }, resolve));
 
-  const schema = getFile(schemaFilePath);
+  console.log(
+    `🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`
+  );
+}
+
+export async function buildApolloServer(
+  configFilePath: string,
+  schemaFilePath: string
+): Promise<{ apolloServer: ApolloServer<ExpressContext>; httpServer: Server }> {
+  await ensureConfigFileExists(configFilePath);
+
+  const schema = getSchemaFile(schemaFilePath);
   const resolvers = buildResolvers(configFilePath, schemaFilePath);
 
   const app = express();
   const httpServer = http.createServer(app);
-  const server = new ApolloServer({
+  const apolloServer = new ApolloServer({
     typeDefs: schema,
     resolvers,
     csrfPrevention: true,
@@ -29,7 +44,7 @@ export async function startApolloServer(
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 
-  await server.start();
+  await apolloServer.start();
 
   app.use(bodyParser.json());
   app.use(async (request, response, next) => {
@@ -42,10 +57,6 @@ export async function startApolloServer(
     next();
   });
 
-  server.applyMiddleware({ app });
-  await new Promise((resolve: any) => httpServer.listen({ port }, resolve));
-
-  console.log(
-    `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
-  );
+  apolloServer.applyMiddleware({ app });
+  return { apolloServer, httpServer };
 }
