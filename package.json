@@ -17,7 +17,7 @@
     "start:dev": "npm run build && node bin/cli.js -p 4000 -c demo/config.json -s demo/schema.graphql",
     "cli:prod": "npm run build && node bin/cli.js -p 4000 -c demo/config.json -s demo/schema.graphql",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "mkdir ./docs/.vitepress/dist; vitepress build docs",
+    "docs:build": "vitepress build docs",
     "docs:serve": "vitepress serve docs",
     "test": "jest",
     "test:watch": "jest --watch",
