@@ -14,8 +14,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "teste": "nodemon src/teste.ts",
-    "start:dev": "nodemon src/develop.ts",
+    "start:dev": "npm run build && node bin/cli.js -p 4000 -c demo/config.json -s demo/schema.graphql",
     "cli:prod": "npm run build && node bin/cli.js -p 4000 -c demo/config.json -s demo/schema.graphql",
     "test": "jest",
     "test:watch": "jest --watch",
