@@ -1,4 +1,6 @@
 export default {
+  title: 'Stateful Mock Server',
+  description: 'Smart GraphQL Mocking Server, Powered by XState',
   themeConfig: {
     siteTitle: 'Stateful Mock Server',
     logo: '/stateful-mock-server-dark.svg',
