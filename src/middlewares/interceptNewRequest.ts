@@ -1,10 +1,10 @@
-import { parse } from 'graphql';
-import { saveNewRequestInConfig } from '../utils/config';
-import { getConfig, isSupportedRequest } from '../utils/graphql';
+import { parse } from "graphql";
+import { saveNewRequestInConfig } from "../utils/config";
+import { getConfig, isSupportedRequest } from "../utils/graphql";
 import {
   ensureStateHasAllRequestFields,
   findRequest,
-} from '../utils/graphql/request';
+} from "../utils/graphql/request";
 
 export const interceptNewRequest = async (
   request,

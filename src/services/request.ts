@@ -1,3 +1,4 @@
+import { validate } from "../utils/config/validation";
 import { ServerError } from "../errors/serverError";
 import { ConfigRequest, Variables } from "../interfaces/graphql";
 import { StateController } from "../interfaces/state";
@@ -57,6 +58,13 @@ export const executeRequest = (
   configFilePath: string,
   controllers: Array<StateController>
 ) => {
+  const { entities, requests } = getConfig(configFilePath);
+  const isConfigFileValid = validate({ entities, requests });
+
+  if (!isConfigFileValid) {
+    return {};
+  }
+
   const request = getRequestFromConfig(
     operationName,
     variables,
@@ -67,7 +75,6 @@ export const executeRequest = (
     controllers,
     configFilePath
   );
-  const { entities } = getConfig(configFilePath);
 
   if (!request) {
     throw new ServerError(
@@ -79,6 +86,7 @@ export const executeRequest = (
   if (stateChanges) {
     stateChanges.forEach(({ id, event, entity }) => {
       const entityInstance = getEntityInstance(updatedControllers, entity, id);
+
       refreshInstanceState({ id, entity }, updatedControllers, entities);
       entityInstance.send(event);
     });

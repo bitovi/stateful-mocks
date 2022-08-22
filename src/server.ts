@@ -1,4 +1,5 @@
 import { ApolloServer, ExpressContext } from "apollo-server-express";
+import fs from "fs";
 import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
 import express from "express";
 import http, { Server } from "http";
@@ -7,13 +8,22 @@ import bodyParser from "body-parser";
 import { getSchemaFile } from "./utils/graphql";
 import { buildResolvers } from "./utils/graphql/resolvers";
 import { interceptNewRequest } from "./middlewares/interceptNewRequest";
-import { ensureConfigFileExists } from "./utils/config";
+import {
+  validateConfigFile,
+  validateConfigFileFormat,
+} from "./utils/config/validation";
 
 export async function startApolloServer(
   configFilePath: string,
   schemaFilePath: string,
   port: number = 4000
 ) {
+  fs.watch(configFilePath, "utf8", function (event, filename) {
+    validateConfigFileFormat(configFilePath, () => {
+      console.log("Your config.json format is incorrect.");
+    });
+  });
+
   const { apolloServer, httpServer } = await buildApolloServer(
     configFilePath,
     schemaFilePath
@@ -29,7 +39,7 @@ export async function buildApolloServer(
   configFilePath: string,
   schemaFilePath: string
 ): Promise<{ apolloServer: ApolloServer<ExpressContext>; httpServer: Server }> {
-  await ensureConfigFileExists(configFilePath);
+  await validateConfigFile(configFilePath);
 
   const schema = getSchemaFile(schemaFilePath);
   const resolvers = buildResolvers(configFilePath, schemaFilePath);

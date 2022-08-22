@@ -1,18 +1,18 @@
 import { hri } from "human-readable-ids";
 import { GraphQLSchema } from "graphql";
-import { createDirectory, existsDirectory, writeFile } from "./io";
-import { ServerError } from "../errors/serverError";
-import { getMocks } from "../generator";
+import { writeFile } from "../io";
+import { ServerError } from "../../errors/serverError";
+import { getMocks } from "../../generator";
 import {
   Config,
   ConfigRequest,
   Entities,
   Entity,
   ResponseDefinition,
-} from "../interfaces/graphql";
-import { getConfig, getSchemaFile } from "./graphql";
-import { getTypeDefinitionForRequest, isQueryList } from "./graphql/request";
-import { generateEventProperties, mockStateMachine } from "./mocks";
+} from "../../interfaces/graphql";
+import { getConfig, getSchemaFile } from "../graphql";
+import { getTypeDefinitionForRequest, isQueryList } from "../graphql/request";
+import { generateEventProperties, mockStateMachine } from "../mocks";
 
 interface NewRequestConfiguration {
   entity: string;
@@ -223,27 +223,5 @@ export const writeNewConfig = async (
     await writeFile(configFilePath, JSON.stringify(config, null, 3));
   } catch (error: unknown) {
     throw new ServerError();
-  }
-};
-export const ensureConfigFileExists = async (
-  configFilePath: string
-): Promise<void> => {
-  const absolutePath = `${process.cwd()}/${configFilePath}`;
-  const isValidPath = existsDirectory(absolutePath);
-
-  if (!isValidPath) {
-    ensureFileDirectoryExits(configFilePath);
-    const config = {
-      entities: {},
-      requests: [],
-    };
-    await writeNewConfig(config, configFilePath);
-  }
-};
-
-const ensureFileDirectoryExits = (filePath: string) => {
-  if (filePath.includes("/")) {
-    const directoriesPath = filePath.substr(0, filePath.lastIndexOf("/"));
-    createDirectory(directoriesPath);
   }
 };
