@@ -6,6 +6,7 @@ import { ServerError } from "../../../errors/serverError";
 import { writeNewConfig } from "../../config";
 import { createDirectory, existsDirectory } from "../../io";
 import { schema } from "./schemas";
+import path from "path";
 
 const ajv = new Ajv({ strictTuples: false, strictTypes: false });
 export const validate = ajv.compile(schema);
@@ -13,7 +14,7 @@ export const validate = ajv.compile(schema);
 export const ensureConfigFileExists = async (
   configFilePath: string
 ): Promise<void> => {
-  const absolutePath = `${process.cwd()}/${configFilePath}`;
+  const absolutePath = path.resolve(`${process.cwd()}/${configFilePath}`);
   const isValidPath = existsDirectory(absolutePath);
 
   if (!isValidPath) {
