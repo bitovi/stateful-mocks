@@ -6,7 +6,8 @@
 - Install
   - Open your existing project
   - `npm i @bitovi/stateful-mocks -D`
-  - Add this script to your package.json: `sms -s <schema.graphql> -p <PORT> -c <CONFIG_PATH>`
+  - Add this script to your package.json:
+    `sms -s mocks/schema.graphql -c mocks/config.json -p 5000`
 
 ## Quick Start
 
