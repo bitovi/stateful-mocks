@@ -2,7 +2,7 @@ import { name, shortName, description, ogImage, ogUrl, font } from './meta'
 
 export default {
   lang: 'en-US',
-  title: 'Stateful Mock Server',
+  title: 'Stateful Mock Server - Bitovi',
   description: 'Smart GraphQL Mocking Server, Powered by XState',
   head: [
     ['meta', { name: 'theme-color', content: '#ffffff' }],
