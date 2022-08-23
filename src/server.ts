@@ -18,16 +18,11 @@ export async function startApolloServer(
   schemaFilePath: string,
   port: number = 4000
 ) {
-  fs.watch(configFilePath, "utf8", function (event, filename) {
-    validateConfigFileFormat(configFilePath, () => {
-      console.log("Your config.json format is incorrect.");
-    });
-  });
-
   const { apolloServer, httpServer } = await buildApolloServer(
     configFilePath,
     schemaFilePath
   );
+
   await new Promise((resolve: any) => httpServer.listen({ port }, resolve));
 
   console.log(
@@ -40,6 +35,12 @@ export async function buildApolloServer(
   schemaFilePath: string
 ): Promise<{ apolloServer: ApolloServer<ExpressContext>; httpServer: Server }> {
   await validateConfigFile(configFilePath);
+
+  fs.watch(configFilePath, "utf8", function (event, filename) {
+    validateConfigFileFormat(configFilePath, () => {
+      console.log("Your config.json format is incorrect.");
+    });
+  });
 
   const schema = getSchemaFile(schemaFilePath);
   const resolvers = buildResolvers(configFilePath, schemaFilePath);
