@@ -13,6 +13,10 @@ export const writeFile = async (path, content): Promise<void> => {
   return fsPromises.writeFile(path, content);
 };
 
-export const readFile = (path: string): string => {
-  return fs.readFileSync(path, "utf8") as unknown as string;
+export const readFile = async (path: string) => {
+  return await fsPromises.readFile(path, "utf8");
+};
+
+export const watch = (path: string, cb: any) => {
+  fs.watch(path, "utf-8", cb);
 };

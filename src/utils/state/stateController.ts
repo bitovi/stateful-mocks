@@ -1,4 +1,4 @@
-import { StateController } from "../../interfaces/state";
+import type { StateController } from "../../interfaces/state";
 import { StateMachine } from "./stateMachine";
 
 export function getControllers(entities): Array<StateController> {

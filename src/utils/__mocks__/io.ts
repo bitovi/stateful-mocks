@@ -1,3 +1,6 @@
+import fs from "fs";
+const fsPromises = fs.promises;
+
 const __jestMockFilesystem = new Map<string, string>();
 
 export const createDirectory = (path: string) => {
@@ -16,11 +19,17 @@ export const writeFile = async (
   return Promise.resolve();
 };
 
-export const readFile = (path: string): string => {
-  const result = __jestMockFilesystem.get(path);
+export const readFile = async (path: string) => {
+  let result = __jestMockFilesystem.get(path);
+  if (!result) {
+    result = await fsPromises.readFile(path, "utf8");
+  }
   if (!result) {
     throw new Error("Unknown Virtual File: " + path);
   }
 
   return result;
 };
+
+// No-op
+export const watch = (path: string, cb) => {};

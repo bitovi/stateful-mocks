@@ -7,19 +7,18 @@ import {
 } from "../utils/graphql/request";
 
 export const interceptNewRequest = async (
-  request,
-  _response,
-  configFilePath,
-  schemaFilePath
+  request: any,
+  _response: any,
+  configFilePath: string,
+  schemaFilePath: string
 ) => {
   if (request.body.query) {
     const parsedQuery: any = parse(request.body.query);
-    //todo: refactor this; see why my utils doesn't work
     const requestName =
       parsedQuery.definitions[0].selectionSet.selections[0].name.value;
     const requestType = parsedQuery.definitions[0].operation;
 
-    let { requests } = getConfig(configFilePath);
+    let { requests } = await getConfig(configFilePath);
     const matchingRequestFromConfig = findRequest(requests, request);
     const isNewRequest = !!!matchingRequestFromConfig;
 
@@ -34,7 +33,11 @@ export const interceptNewRequest = async (
       );
     }
 
-    if (isSupportedRequest(requestName, schemaFilePath) && isNewRequest) {
+    const requestIsSupported = await isSupportedRequest(
+      requestName,
+      schemaFilePath
+    );
+    if (requestIsSupported && isNewRequest) {
       await saveNewRequestInConfig(
         request,
         requestName,

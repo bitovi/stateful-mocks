@@ -1,5 +1,5 @@
-import { ResponseDefinition } from "../interfaces/graphql";
-import { StateController } from "../interfaces/state";
+import type { ResponseDefinition } from "../interfaces/graphql";
+import type { StateController } from "../interfaces/state";
 import { getEntityInstance } from "../utils/state/stateMachine";
 
 export const getResponseData = (

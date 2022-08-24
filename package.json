@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@graphql-tools/mock": "^8.7.0",
+    "ajv": "^8.11.0",
     "apollo-server": "^3.9.0",
     "apollo-server-express": "^3.9.0",
     "body-parser": "^1.20.0",

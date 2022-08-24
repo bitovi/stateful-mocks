@@ -13,7 +13,7 @@ jest.mock("../utils/io.ts");
 
 beforeAll(async () => {
   servers = await buildApolloServer(
-    "config.json",
+    "./config.json",
     "src/tests/resources/testSchema.graphql"
   );
 });
@@ -69,7 +69,7 @@ describe("Integration Tests", () => {
           null
         )
       );
- 
+
     expect(response2.text).toBe({}); */
   });
 });

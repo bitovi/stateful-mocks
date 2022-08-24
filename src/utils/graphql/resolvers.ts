@@ -1,17 +1,18 @@
+import type { RequestSpecifications } from "../../interfaces/graphql";
+import type { StateController } from "../../interfaces/state";
 import { getConfig, getSupportedRequests } from ".";
-import { RequestSpecifications } from "../../interfaces/graphql";
-import { StateController } from "../../interfaces/state";
 import { executeRequest } from "../../services/request";
 import { getControllers } from "../state/stateController";
 
-export const buildResolvers = (
+export const buildResolvers = async (
   configFilePath: string,
   schemaFilePath: string
 ) => {
-  const { entities } = getConfig(configFilePath);
-  const controllers: Array<StateController> = getControllers(entities);
-  const supportedRequests: Array<RequestSpecifications> =
-    getSupportedRequests(schemaFilePath);
+  const { entities } = await getConfig(configFilePath);
+  const controllers: StateController[] = getControllers(entities);
+  const supportedRequests: RequestSpecifications[] = await getSupportedRequests(
+    schemaFilePath
+  );
 
   return supportedRequests.reduce(
     (resolvers, request) => {
