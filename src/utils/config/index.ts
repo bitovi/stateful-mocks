@@ -1,15 +1,15 @@
-import { hri } from "human-readable-ids";
-import { GraphQLSchema } from "graphql";
-import { writeFile } from "../io";
-import { ServerError } from "../../errors/serverError";
-import { getMocks } from "../../generator";
-import {
+import type {
   Config,
   ConfigRequest,
   Entities,
   Entity,
   ResponseDefinition,
 } from "../../interfaces/graphql";
+import { hri } from "human-readable-ids";
+import { GraphQLSchema } from "graphql";
+import { writeFile } from "../io";
+import { ServerError } from "../../errors/serverError";
+import { getMocks } from "../../generator";
 import { getConfig, getSchemaFile } from "../graphql";
 import { getTypeDefinitionForRequest, isQueryList } from "../graphql/request";
 import { generateEventProperties, mockStateMachine } from "../mocks";
@@ -136,16 +136,12 @@ export const saveNewRequestInConfig = async (
   configFilePath: string,
   schemaFilePath: string
 ) => {
-  const schema = getSchemaFile(schemaFilePath);
-  const config = getConfig(configFilePath);
-  let { entities, requests } = config;
   const { query, variables } = requestBody;
-  const isList = isQueryList(
-    requestName,
-    requestType,
-    getSchemaFile(schemaFilePath)
-  );
+  const schema = await getSchemaFile(schemaFilePath);
+  const config = await getConfig(configFilePath);
+  let { entities, requests } = config;
 
+  const isList = isQueryList(requestName, requestType, schema);
   const entity = getEntityName(requestName, requestType, schema);
 
   const isNewEntity = !Boolean(

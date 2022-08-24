@@ -1,10 +1,8 @@
 import Ajv from "ajv";
-import fs from "fs";
-const fsPromises = fs.promises;
 import { InvalidConfig } from "../../../errors/invalidConfig";
 import { ServerError } from "../../../errors/serverError";
 import { writeNewConfig } from "../../config";
-import { createDirectory, existsDirectory } from "../../io";
+import { createDirectory, existsDirectory, readFile } from "../../io";
 import { schema } from "./schemas";
 import path from "path";
 
@@ -39,7 +37,7 @@ export const validateConfigFileFormat = async (
   isNotValidBehavior
 ) => {
   try {
-    let config = await fsPromises.readFile(configFilePath, "utf8");
+    let config = await readFile(configFilePath);
 
     if (config) {
       config = JSON.parse(config);

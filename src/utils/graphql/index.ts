@@ -1,25 +1,21 @@
-import fs from "fs";
-import { GraphQLSchema } from "graphql";
+import type { Config, RequestSpecifications } from "../../interfaces/graphql";
+import type { GraphQLSchema } from "graphql";
 import { parse } from "graphql";
-import { Config, RequestSpecifications } from "../../interfaces/graphql";
 import { readFile } from "../io";
 
-export const getSchemaFile = (schemaFilePath: string): GraphQLSchema => {
-  return fs.readFileSync(
-    `${process.cwd()}/${schemaFilePath}`,
-    "utf8"
-  ) as unknown as GraphQLSchema;
+export const getSchemaFile = async (schemaFilePath: string) => {
+  const schema = await readFile(schemaFilePath);
+  return schema as unknown as GraphQLSchema;
 };
 
-export const getConfig = (configFilePath: string): Config => {
-  const config = readFile(configFilePath);
+export const getConfig = async (configFilePath: string): Promise<Config> => {
+  const config = await readFile(configFilePath);
 
   return JSON.parse(config);
 };
-export const getSupportedRequests = (
-  schemaFilePath: string
-): Array<RequestSpecifications> => {
-  const typeDefs = getSchemaFile(schemaFilePath);
+
+export const getSupportedRequests = async (schemaFilePath: string) => {
+  const typeDefs = await getSchemaFile(schemaFilePath);
   const supportedRequests = parse(String(typeDefs))
     .definitions.map((definition: any) => {
       const { value } = definition.name;
@@ -36,12 +32,13 @@ export const getSupportedRequests = (
   return [].concat.apply([], supportedRequests);
 };
 
-export const isSupportedRequest = (
+export const isSupportedRequest = async (
   requestName: string,
   schemaFilePath: string
-): boolean => {
-  const supportedRequests: Array<RequestSpecifications> =
-    getSupportedRequests(schemaFilePath);
+) => {
+  const supportedRequests: RequestSpecifications[] = await getSupportedRequests(
+    schemaFilePath
+  );
 
   return supportedRequests.some((request) => request.name === requestName);
 };

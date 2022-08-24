@@ -1,7 +1,8 @@
+import type { Config } from "./../interfaces/graphql";
+import type { StateController } from "../interfaces/state";
+import type { ConfigRequest, Variables } from "../interfaces/graphql";
 import { validate } from "../utils/config/validation";
 import { ServerError } from "../errors/serverError";
-import { ConfigRequest, Variables } from "../interfaces/graphql";
-import { StateController } from "../interfaces/state";
 import { getConfig } from "../utils/graphql";
 import { getRequestName } from "../utils/graphql/request";
 import { deepEqual } from "../utils/object";
@@ -12,11 +13,9 @@ import { getResponseData, refreshInstanceState } from "./getResponseData";
 const getRequestFromConfig = (
   operationName: string,
   variables: Variables,
-  configFilePath: string
-): ConfigRequest | undefined => {
-  const { requests } = getConfig(configFilePath);
-
-  return requests.find((request) => {
+  config: Config
+) => {
+  return config.requests.find((request) => {
     const { variables: previousRequestVariables } = JSON.parse(request.body);
     return (
       getRequestName(request) === operationName &&
@@ -35,9 +34,9 @@ export const getConfigRequestsNames = (requests: Array<ConfigRequest>) => {
 
 const ensureControllersAreUpdated = (
   oldControllers: Array<StateController>,
-  configFilePath: string
+  config: Config
 ) => {
-  const { entities } = getConfig(configFilePath);
+  const { entities } = config;
   const newControllers: Array<StateController> = getControllers(entities);
 
   if (oldControllers !== newControllers) {
@@ -52,29 +51,21 @@ const ensureControllersAreUpdated = (
   return oldControllers;
 };
 
-export const executeRequest = (
+export const executeRequest = async (
   operationName: string,
   variables: Variables,
   configFilePath: string,
   controllers: Array<StateController>
 ) => {
-  const { entities, requests } = getConfig(configFilePath);
-  const isConfigFileValid = validate({ entities, requests });
+  const config = await getConfig(configFilePath);
+  const { entities, requests } = config;
+  const request = getRequestFromConfig(operationName, variables, config);
+  const updatedControllers = ensureControllersAreUpdated(controllers, config);
 
+  const isConfigFileValid = validate(config);
   if (!isConfigFileValid) {
     return {};
   }
-
-  const request = getRequestFromConfig(
-    operationName,
-    variables,
-    configFilePath
-  );
-
-  const updatedControllers = ensureControllersAreUpdated(
-    controllers,
-    configFilePath
-  );
 
   if (!request) {
     throw new ServerError(

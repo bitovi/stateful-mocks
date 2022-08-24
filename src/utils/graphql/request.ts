@@ -1,8 +1,12 @@
+import type {
+  ConfigRequest,
+  Entities,
+  Variables,
+} from "../../interfaces/graphql";
+import type { StateController } from "../../interfaces/state";
 import { GraphQLSchema, parse } from "graphql";
 import { getConfig, getSchemaFile } from ".";
 import { getMocks } from "../../generator";
-import { ConfigRequest, Entities, Variables } from "../../interfaces/graphql";
-import { StateController } from "../../interfaces/state";
 import { getEntityName, writeNewConfig } from "../config";
 import { deepEqual, mergeDeep } from "../object";
 import { getControllers } from "../state/stateController";
@@ -65,8 +69,8 @@ export const ensureStateHasAllRequestFields = async (
   requestName: string,
   requestType: string
 ): Promise<void> => {
-  const schema = getSchemaFile(schemaFilePath);
-  const { requests, entities } = getConfig(configFilePath);
+  const schema = await getSchemaFile(schemaFilePath);
+  const { requests, entities } = await getConfig(configFilePath);
   const { query, variables } = request.body;
 
   const { response } = matchingRequestFromConfig;
@@ -74,26 +78,26 @@ export const ensureStateHasAllRequestFields = async (
   const entity = getEntityName(requestName, requestType, schema);
   const controllers: Array<StateController> = getControllers(entities);
 
-  const config = { query, schema, variables, controllers, entities, entity };
+  const options = { query, schema, variables, controllers, entities, entity };
 
   if (requestType === "query") {
     if (Array.isArray(response)) {
       await Promise.all(
-        response.map(async ({ id }) => await formatArguments(config, id))
+        response.map(async ({ id }) => await formatArguments(options, id))
       );
     } else {
-      await formatArguments(config, response.id);
+      await formatArguments(options, response.id);
     }
   } else {
     if (Array.isArray(response)) {
       await Promise.all(
         response.map(
-          async ({ id, state }) => await formatArguments(config, id, state)
+          async ({ id, state }) => await formatArguments(options, id, state)
         )
       );
     } else {
       const { state, id } = response;
-      await formatArguments(config, id, state);
+      await formatArguments(options, id, state);
     }
   }
 
