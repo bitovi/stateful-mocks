@@ -5,7 +5,7 @@ const {
   SCHEMA_FILE_PATH,
   USER_ADMIN_GRAPHQL_SCHEMA,
   USER_ADMIN_CONFIG_JSON,
-  PORT,
+  PORT
 } = require("./constants.js");
 const { ensureFileExists } = require("../dist/utils/config/validation");
 const { addScriptToPackageJson } = require("../dist/utils/io");
@@ -34,25 +34,25 @@ const initSms = async () => {
       {
         name: "configFilePath",
         message: "Config file path? (Will overwrite if exists)",
-        default: CONFIG_FILE_PATH,
+        default: CONFIG_FILE_PATH
       },
       {
         name: "schemaFilePath",
         message: "Schema file path? (Will overwrite if exists)",
-        default: SCHEMA_FILE_PATH,
+        default: SCHEMA_FILE_PATH
       },
       {
         name: "port",
         message: "Port number?",
         type: "number",
-        default: PORT,
+        default: PORT
       },
       {
         name: "startingConfig",
         message: "Choose a starting config:",
         type: "list",
-        choices: ["Empty", "User Admin"],
-      },
+        choices: ["Empty", "User Admin"]
+      }
     ]);
 
   await ensureFileExists(
@@ -66,7 +66,7 @@ const initSms = async () => {
 
 program
   .command("init")
-  .description("CLI to generate quick started sms")
+  .description("CLI to generate quick start sms")
   .action(initSms);
 
 program.parse();
