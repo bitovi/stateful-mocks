@@ -40,49 +40,29 @@ exports.QUICK_STARTS = {
             states: {
               empty: {
                 on: {
-                  create: "created",
-                },
+                  create: "created"
+                }
               },
               created: {
                 on: {
                   updateName: "updatedName",
                   updatePassword: "updatedPassword",
-                  remove: "empty",
-                },
+                  remove: "empty"
+                }
               },
               updatedName: {
                 on: {
                   updatePassword: "updatedPassword",
-                  remove: "empty",
-                },
+                  remove: "empty"
+                }
               },
               updatedPassword: {
                 on: {
                   updateName: "updatedName",
-                  remove: "empty",
-                },
-              },
-              smooth: {
-                on: {
-                  makeSmooth: "smooth",
-                },
-              },
-              selfish: {
-                on: {
-                  makeSelfish: "selfish",
-                },
-              },
-              mighty: {
-                on: {
-                  makeMighty: "mighty",
-                },
-              },
-              sweet: {
-                on: {
-                  makeSweet: "sweet",
-                },
-              },
-            },
+                  remove: "empty"
+                }
+              }
+            }
           },
           instances: {
             John: {
@@ -91,21 +71,21 @@ exports.QUICK_STARTS = {
                   id: "1",
                   name: "John Doe",
                   email: "john@mail.com",
-                  password: "johnPass",
+                  password: "johnPass"
                 },
                 updatedName: {
                   id: "1",
                   name: "John Duck",
                   email: "john@mail.com",
-                  password: "johnPass",
+                  password: "johnPass"
                 },
                 updatedPassword: {
                   id: "1",
                   name: "John Doe",
                   email: "john@mail.com",
-                  password: "johnNewPass",
-                },
-              },
+                  password: "johnNewPass"
+                }
+              }
             },
             Mark: {
               statesData: {
@@ -113,169 +93,169 @@ exports.QUICK_STARTS = {
                   id: "2",
                   name: "Mark Swain",
                   email: "markh@mail.com",
-                  password: "markPass",
+                  password: "markPass"
                 },
                 updatedName: {
                   id: "2",
                   name: "Mark Louis",
                   email: "markh@mail.com",
-                  password: "markPass",
+                  password: "markPass"
                 },
                 updatedPassword: {
                   id: "2",
                   name: "Mark Swain",
                   email: "markh@mail.com",
-                  password: "markNewPass",
-                },
-              },
-            },
-          },
-        },
+                  password: "markNewPass"
+                }
+              }
+            }
+          }
+        }
       },
       requests: [
         {
           body: '{"query":"query Query {\\r\\n  accountById {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n \\r\\n}","variables":{},"operationName":"Query"}',
           response: {
             entity: "Account",
-            id: "John",
-          },
+            id: "John"
+          }
         },
         {
           body: '{"query":"query Query {\\r\\n  accounts {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n}","variables":{},"operationName":"Query"}',
           response: [
             {
               entity: "Account",
-              id: "John",
+              id: "John"
             },
             {
               entity: "Account",
-              id: "Mark",
-            },
-          ],
+              id: "Mark"
+            }
+          ]
         },
         {
           body: '{"query":"mutation Mutation($input: CreateAccountInput!) {\\r\\n  createAccount(input: $input) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n}","variables":{"input":{"name":"John","email":"john@mail.com","password":"johnPass"}},"operationName":"Mutation"}',
           response: {
             entity: "Account",
             id: "John",
-            state: "created",
+            state: "created"
           },
           stateChanges: [
             {
               entity: "Account",
               id: "John",
-              event: "create",
-            },
-          ],
+              event: "create"
+            }
+          ]
         },
         {
           body: '{"query":"mutation Mutation($input: CreateAccountInput!) {\\r\\n  createAccount(input: $input) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n}","variables":{"input":{"name":"Mark","email":"mark@mail.com","password":"markPass"}},"operationName":"Mutation"}',
           response: {
             entity: "Account",
             id: "Mark",
-            state: "created",
+            state: "created"
           },
           stateChanges: [
             {
               entity: "Account",
               id: "Mark",
-              event: "create",
-            },
-          ],
+              event: "create"
+            }
+          ]
         },
         {
           body: '{"query":"mutation UpdateAccountName($input: UpdateAccountNameInput!) {\\r\\n  updateAccountName(input: $input) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n}","variables":{"input":{"id":"2","name":"Mark"}},"operationName":"UpdateAccountName"}',
           response: {
             entity: "Account",
             id: "Mark",
-            state: "updatedName",
+            state: "updatedName"
           },
           stateChanges: [
             {
               entity: "Account",
               id: "Mark",
-              event: "updateName",
-            },
-          ],
+              event: "updateName"
+            }
+          ]
         },
         {
           body: '{"query":"mutation UpdateAccountName($input: UpdateAccountNameInput!) {\\r\\n  updateAccountName(input: $input) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n}","variables":{"input":{"id":"1","name":"John"}},"operationName":"UpdateAccountName"}',
           response: {
             entity: "Account",
             id: "John",
-            state: "updatedName",
+            state: "updatedName"
           },
           stateChanges: [
             {
               entity: "Account",
               id: "John",
-              event: "updateName",
-            },
-          ],
+              event: "updateName"
+            }
+          ]
         },
         {
           body: '{"query":"mutation Mutation($input: UpdateAccountPasswordInput!) {\\r\\n  updateAccountPassword(input: $input) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n}","variables":{"input":{"id":"1","password":"newJohnPassword"}},"operationName":"Mutation"}',
           response: {
             entity: "Account",
             id: "John",
-            state: "updatedPassword",
+            state: "updatedPassword"
           },
           stateChanges: [
             {
               entity: "Account",
               id: "John",
-              event: "updatePassword",
-            },
-          ],
+              event: "updatePassword"
+            }
+          ]
         },
         {
           body: '{"query":"mutation Mutation($input: UpdateAccountPasswordInput!) {\\r\\n  updateAccountPassword(input: $input) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n}","variables":{"input":{"id":"2","password":"newMarkPassword"}},"operationName":"Mutation"}',
           response: {
             entity: "Account",
             id: "Mark",
-            state: "updatedPassword",
+            state: "updatedPassword"
           },
           stateChanges: [
             {
               entity: "Account",
               id: "Mark",
-              event: "updatePassword",
-            },
-          ],
+              event: "updatePassword"
+            }
+          ]
         },
         {
           body: '{"query":" \\r\\n\\r\\nmutation RemoveAccount($removeAccountId: String!) {\\r\\n  removeAccount(id: $removeAccountId) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n}","variables":{"removeAccountId":"1"},"operationName":"RemoveAccount"}',
           response: {
             entity: "Account",
             id: "John",
-            state: "empty",
+            state: "empty"
           },
           stateChanges: [
             {
               entity: "Account",
               id: "John",
-              event: "remove",
-            },
-          ],
+              event: "remove"
+            }
+          ]
         },
         {
           body: '{"query":" \\r\\n\\r\\nmutation RemoveAccount($removeAccountId: String!) {\\r\\n  removeAccount(id: $removeAccountId) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n  }\\r\\n}","variables":{"removeAccountId":"2"},"operationName":"RemoveAccount"}',
           response: {
             entity: "Account",
             id: "Mark",
-            state: "empty",
+            state: "empty"
           },
           stateChanges: [
             {
               entity: "Account",
               id: "Mark",
-              event: "remove",
-            },
-          ],
-        },
-      ],
-    },
-  },
+              event: "remove"
+            }
+          ]
+        }
+      ]
+    }
+  }
 };
 
 exports.CONFIG_FILE_PATH = "mocks/config.json";
