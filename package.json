@@ -26,6 +26,7 @@
     "release:major": "npm version major && git push && git push --tags",
     "release:minor": "npm version minor && git push && git push --tags",
     "release:patch": "npm version patch && git push && git push --tags",
+    "release:pre": "npm version pre && git push && git push --tags",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
