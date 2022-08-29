@@ -280,3 +280,4 @@ exports.USER_ADMIN_CONFIG_JSON = {
 
 exports.CONFIG_FILE_PATH = "mocks/config.json";
 exports.SCHEMA_FILE_PATH = "mocks/schema.graphql";
+exports.PORT = 4000;

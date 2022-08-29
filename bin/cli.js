@@ -5,8 +5,10 @@ const {
   SCHEMA_FILE_PATH,
   USER_ADMIN_GRAPHQL_SCHEMA,
   USER_ADMIN_CONFIG_JSON,
+  PORT,
 } = require("./constants.js");
 const { ensureFileExists } = require("../dist/utils/config/validation");
+const { addScriptToPackageJson } = require("../dist/utils/io");
 
 const program = new Command();
 const schemaOptions = ["-s, --schema <path>", "Path to GraphQL schema"];
@@ -27,30 +29,39 @@ program
 const initSms = async () => {
   const inquirer = await import("inquirer");
 
-  const { configFilePath, schemaFilePath } = await inquirer.default.prompt([
-    {
-      name: "configFilePath",
-      message: "Config file path? (Will overwrite if exists)",
-      default: CONFIG_FILE_PATH,
-    },
-    {
-      name: "schemaFilePath",
-      message: "Schema file path? (Will overwrite if exists)",
-      default: SCHEMA_FILE_PATH,
-    },
-    {
-      name: "startingConfig",
-      message: "Choose a starting config:",
-      type: "list",
-      choices: ["Empty", "User Admin"],
-    },
-  ]);
+  const { configFilePath, schemaFilePath, port } =
+    await inquirer.default.prompt([
+      {
+        name: "configFilePath",
+        message: "Config file path? (Will overwrite if exists)",
+        default: CONFIG_FILE_PATH,
+      },
+      {
+        name: "schemaFilePath",
+        message: "Schema file path? (Will overwrite if exists)",
+        default: SCHEMA_FILE_PATH,
+      },
+      {
+        name: "port",
+        message: "Port number?",
+        type: "number",
+        default: PORT,
+      },
+      {
+        name: "startingConfig",
+        message: "Choose a starting config:",
+        type: "list",
+        choices: ["Empty", "User Admin"],
+      },
+    ]);
 
   await ensureFileExists(
     configFilePath,
     JSON.stringify(USER_ADMIN_CONFIG_JSON, null, "\t")
   );
   await ensureFileExists(schemaFilePath, USER_ADMIN_GRAPHQL_SCHEMA.schema);
+
+  await addScriptToPackageJson(configFilePath, schemaFilePath, port);
 };
 
 program
