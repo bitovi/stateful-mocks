@@ -1,19 +1,15 @@
-#!/usr/bin/env node
-
 const { Command } = require("commander");
 const { run } = require("./actions");
+const {
+  CONFIG_FILE_PATH,
+  SCHEMA_FILE_PATH,
+  USER_ADMIN_GRAPHQL_SCHEMA,
+  USER_ADMIN_CONFIG_JSON,
+} = require("./constants.js");
+const { ensureFileExists } = require("../dist/utils/config/validation");
 
 const program = new Command();
-
 const schemaOptions = ["-s, --schema <path>", "Path to GraphQL schema"];
-// const entityOptions = [
-//   '-e, --entity <name>',
-//   'Entity to generate mock data for',
-// ]
-// const fieldsOptions = [
-//   '-f, --fields <fields>',
-//   'Comma-separated list of fields to mock',
-// ]
 
 program
   .name("sms")
@@ -28,12 +24,38 @@ program
   .option("-p, --port <port>", "Port to run mock server")
   .action(run);
 
-// program
-//   .command("gen")
-//   .description("CLI to generate mock data for an entity of a GraphQL schema")
-//   .requiredOption(...schemaOptions)
-//   .requiredOption(...entityOptions)
-//   .option(...fieldsOptions)
-//   .action(gen);
+const initSms = async () => {
+  const inquirer = await import("inquirer");
+
+  const { configFilePath, schemaFilePath } = await inquirer.default.prompt([
+    {
+      name: "configFilePath",
+      message: "Config file path? (Will overwrite if exists)",
+      default: CONFIG_FILE_PATH,
+    },
+    {
+      name: "schemaFilePath",
+      message: "Schema file path? (Will overwrite if exists)",
+      default: SCHEMA_FILE_PATH,
+    },
+    {
+      name: "startingConfig",
+      message: "Choose a starting config:",
+      type: "list",
+      choices: ["Empty", "User Admin"],
+    },
+  ]);
+
+  await ensureFileExists(
+    configFilePath,
+    JSON.stringify(USER_ADMIN_CONFIG_JSON, null, "\t")
+  );
+  await ensureFileExists(schemaFilePath, USER_ADMIN_GRAPHQL_SCHEMA.schema);
+};
+
+program
+  .command("init")
+  .description("CLI to generate quick started sms")
+  .action(initSms);
 
 program.parse();
