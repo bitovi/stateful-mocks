@@ -1,7 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap");
 
 :root body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif !important;
 }
 html {
   -webkit-tap-highlight-color: transparent;
@@ -17,32 +18,32 @@ html {
 }
 /* Hide the default footer because FeathersLayout.vue uses a custom footer */
 .home-page .VPFooter {
-  display:none;
+  display: none;
 }
 /* Hide the white gradient at the bottom of the page */
 .aside-curtain {
-  display:none
+  display: none;
 }
 
 /* TODO: Move to UnoCSS Rules */
 body .bg-primary {
-  background: var(--primary)
+  background: var(--primary);
 }
 body .text-primary-content {
-  background: var(--primary-content)
+  background: var(--primary-content);
 }
 body .bg-secondary {
-  background: var(--secondary)
+  background: var(--secondary);
 }
 body .text-secondary-content {
-  background: var(--secondary-content)
+  background: var(--secondary-content);
 }
 /* For secondary colors, switch the cloud color to charcoal in dark mode */
 .dark body .bg-secondary {
-  background: var(--accent)
+  background: var(--accent);
 }
 .dark body .text-secondary-content {
-  background: var(--accent-content)
+  background: var(--accent-content);
 }
 
 body .bg-neutral {
@@ -52,13 +53,13 @@ body .text-neutral-content {
   color: var(--neutral-content);
 }
 body .bg-base-100 {
-  background: var(--vp-c-bg)
+  background: var(--vp-c-bg);
 }
 
-.VPNav .logo, .VPNav .title {
+.VPNav .logo,
+.VPNav .title {
   transition: all 300ms;
 }
-
 
 /* Style the Global Language Select in the left nav */
 #app #GlobalLanguageSelect {
@@ -66,7 +67,6 @@ body .bg-base-100 {
   border-bottom: 1px solid transparent;
   border-bottom-color: var(--vp-c-divider-light);
 }
-
 
 @media (min-width: 960px) {
   .home-page .VPNav,
@@ -78,7 +78,7 @@ body .bg-base-100 {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  #app:not('.home-page') .VPNav.no-sidebar {
+  #app:not(".home-page") .VPNav.no-sidebar {
     backdrop-filter: saturate(50%) blur(2px);
     -webkit-backdrop-filter: saturate(50%) blur(2px);
     background: none;
@@ -88,16 +88,15 @@ body .bg-base-100 {
     -webkit-backdrop-filter: saturate(50%) blur(2px);
     background: none;
   }
-  #app:not('.home-page') .VPNavBar.has-sidebar .content[data-v-1dc33fef] {
+  #app:not(".home-page") .VPNavBar.has-sidebar .content[data-v-1dc33fef] {
     backdrop-filter: saturate(50%) blur(2px);
     -webkit-backdrop-filter: saturate(50%) blur(2px);
-    background: #FFFFFFCC;
+    background: #ffffffcc;
   }
-  .dark #app:not('.home-page') .VPNavBar.has-sidebar .content[data-v-1dc33fef] {
-    background: #242424CC;
+  .dark #app:not(".home-page") .VPNavBar.has-sidebar .content[data-v-1dc33fef] {
+    background: #242424cc;
   }
 }
-
 
 /* Overrides */
 
@@ -105,7 +104,8 @@ body .bg-base-100 {
   transform: scale(0.9);
 }
 
-.vp-doc th, .vp-doc td {
+.vp-doc th,
+.vp-doc td {
   padding: 6px 10px;
   border: 1px solid #8882;
 }
