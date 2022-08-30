@@ -1,27 +1,28 @@
 import Ajv from "ajv";
 import { InvalidConfig } from "../../../errors/invalidConfig";
 import { ServerError } from "../../../errors/serverError";
-import { writeNewConfig } from "../../config";
-import { createDirectory, existsDirectory, readFile } from "../../io";
+import {
+  createDirectory,
+  existsDirectory,
+  readFile,
+  writeFile,
+} from "../../io";
 import { schema } from "./schemas";
 import path from "path";
 
 const ajv = new Ajv({ strictTuples: false, strictTypes: false });
 export const validate = ajv.compile(schema);
 
-export const ensureConfigFileExists = async (
-  configFilePath: string
+export const ensureFileExists = async (
+  filePath: string,
+  content: string
 ): Promise<void> => {
-  const absolutePath = path.resolve(`${process.cwd()}/${configFilePath}`);
+  const absolutePath = path.resolve(`${process.cwd()}/${filePath}`);
   const isValidPath = existsDirectory(absolutePath);
 
   if (!isValidPath) {
-    ensureFileDirectoryExits(configFilePath);
-    const config = {
-      entities: {},
-      requests: [],
-    };
-    await writeNewConfig(config, configFilePath);
+    ensureFileDirectoryExits(filePath);
+    await writeFile(filePath, content);
   }
 };
 
@@ -54,7 +55,8 @@ export const validateConfigFileFormat = async (
 };
 
 export const validateConfigFile = async (configFilePath: string) => {
-  await ensureConfigFileExists(configFilePath);
+  const config = { entities: {}, requests: [] };
+  await ensureFileExists(configFilePath, JSON.stringify(config, null, "\t"));
   await validateConfigFileFormat(configFilePath, () => {
     throw new InvalidConfig();
   });

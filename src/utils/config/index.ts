@@ -1,5 +1,4 @@
 import type {
-  Config,
   ConfigRequest,
   Entities,
   Entity,
@@ -8,7 +7,6 @@ import type {
 import { hri } from "human-readable-ids";
 import { GraphQLSchema } from "graphql";
 import { writeFile } from "../io";
-import { ServerError } from "../../errors/serverError";
 import { getMocks } from "../../generator";
 import { getConfig, getSchemaFile } from "../graphql";
 import { getTypeDefinitionForRequest, isQueryList } from "../graphql/request";
@@ -208,16 +206,8 @@ export const saveNewRequestInConfig = async (
   });
   requests.push(newRequest);
 
-  await writeNewConfig({ entities, requests }, configFilePath);
-};
-
-export const writeNewConfig = async (
-  config: Config,
-  configFilePath: string
-): Promise<void> => {
-  try {
-    await writeFile(configFilePath, JSON.stringify(config, null, 3));
-  } catch (error: unknown) {
-    throw new ServerError();
-  }
+  await writeFile(
+    configFilePath,
+    JSON.stringify({ entities, requests }, null, "\t")
+  );
 };

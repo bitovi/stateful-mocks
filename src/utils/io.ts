@@ -20,3 +20,18 @@ export const readFile = async (path: string) => {
 export const watch = (path: string, cb: any) => {
   fs.watch(path, "utf-8", cb);
 };
+
+export const addScriptToPackageJson = async (
+  configPath: string,
+  schemaPath: string,
+  port: number
+) => {
+  const pkgPath = process.cwd() + "/package.json";
+  const pkgString = await readFile(pkgPath);
+  const pkg = JSON.parse(pkgString);
+  Object.assign(pkg.scripts ?? {}, {
+    sms: `npm run sms -c ${configPath} -s ${schemaPath} -p ${port}`,
+  });
+
+  writeFile(pkgPath, JSON.stringify(pkg, null, "\t"));
+};
