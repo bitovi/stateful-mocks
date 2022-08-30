@@ -52,10 +52,12 @@ export default {
       pattern: "https://github.com/bitovi/stateful-mocks/edit/main/docs/:path",
       text: "Edit this page on GitHub",
     },
-    socialLinks: {
-      icon: "github",
-      link: "https://github.com/bitovi/stateful-mocks",
-    },
+    socialLinks: [
+      {
+        icon: "github",
+        link: "https://github.com/bitovi/stateful-mocks",
+      },
+    ],
     sidebar: [
       {
         text: "Guides",
