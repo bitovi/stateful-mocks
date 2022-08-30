@@ -7,10 +7,11 @@ import type { StateController } from "../../interfaces/state";
 import { GraphQLSchema, parse } from "graphql";
 import { getConfig, getSchemaFile } from ".";
 import { getMocks } from "../../generator";
-import { getEntityName, writeNewConfig } from "../config";
+import { getEntityName } from "../config";
 import { deepEqual, mergeDeep } from "../object";
 import { getControllers } from "../state/stateController";
 import { getEntityInstance } from "../state/stateMachine";
+import { writeFile } from "../io";
 
 interface ConfigArguments {
   query: string;
@@ -101,7 +102,10 @@ export const ensureStateHasAllRequestFields = async (
     }
   }
 
-  await writeNewConfig({ entities, requests }, configFilePath);
+  await writeFile(
+    configFilePath,
+    JSON.stringify({ entities, requests }, null, "\t")
+  );
 };
 
 const formatArguments = async (

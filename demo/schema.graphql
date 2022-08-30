@@ -1,60 +1,34 @@
-type Test {
-  text: String
-  textArr: [String]
-  score: Int!
-  item: Item
-  requiredItem: Item!
-  items: [Item]
-  requiredItems: [Item!]
-  requiredArrItems: [Item]!
-  required: [Item!]!
-  both: Items
-  bothArr: [Items]
-  bothRequiredArr: [Items!]
-  bothArrRequired: [Items!]!
-}
-
-type Item {
+type Account {
+  id: String!
   name: String!
-  item1: Item1
-}
-
-type Item1 {
-  name: String!
-}
-
-union Items = Item | Item1
-
-type Person {
-  name: String!
-  age: Int!
+  email: String!
+  password: String!
 }
 
 type Query {
-  personByName(name: String): Person
-  personByNameQuo(name: String): Person
-  personByNameDi(name: String): Person
-  people: [Person]
+  accountById(id: String): Account
+  accounts: [Account]
 }
 
-input CreatePersonInput {
+input CreateAccountInput {
   name: String!
-  age: Int!
+  email: String!
+  password: String!
 }
 
-input UpdatePersonNameInput {
-  id: Int!
+input UpdateAccountNameInput {
+  id: String!
   name: String!
 }
 
-input UpdatePersonAgeInput {
-  id: Int!
-  age: Int!
+input UpdateAccountPasswordInput {
+  id: String!
+  password: String!
 }
 
 type Mutation {
-  createPerson(input: CreatePersonInput!): Person
-  updatePersonName(input: UpdatePersonNameInput!): Person
-  updatePersondAge(input: UpdatePersonAgeInput!): Person
-  removePerson(id: Int!): Person
+  createAccount(input: CreateAccountInput!): Account
+  updateAccountName(input: UpdateAccountNameInput!): Account
+  updateAccountPassword(input: UpdateAccountPasswordInput!): Account
+  removeAccount(id: String!): Account
 }
