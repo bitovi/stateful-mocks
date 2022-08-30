@@ -10,15 +10,18 @@ If you prefer, you can also get [manually install Stateful Mock Server](#manual-
 
 ## Use the Generator
 
+Run a single command to get up and running right away:
+
 ```bash
 npx @bitovi/stateful-mocks init
 ```
 
-The generator will ask you a few questions:
+The generator will ask you for the following information:
 
-- Config file path
-- GraphQL schema file path
-- Starting config, which can be one of the following options
+- Where to create the config file
+- Where to create the GraphQL schema file
+- Which port to use for the server, default `4000`.
+- What starting config to use, which will be one of the following options
   - Empty, a minimal config and schema
   - User Admin
 
@@ -33,6 +36,42 @@ Use the Quick Start steps above and choose the "Empty" starting config. Once you
 Use the Quick Start steps above and choose an example starting config.
 
 ## Manual Installation
+
+It's possible to manually add Stateful Mock Server to your project. Perform the following steps:
+
+### Install Stateful Mocks
+
+```bash
+npm i @bitovi/stateful-mocks -D
+```
+
+### Create a `config.json` file.
+
+```bash
+mkdir ./mocks;
+touch ./mocks/config.json
+echo "{ \n\t\"entities\": {}, \n\t\"requests\": [] \n}" > "./mocks/config.json"
+```
+
+### Add your GraphQL schema.
+
+You'll need a valid GraphQL schema for this step. If you don't have one, create one using the [quick start generator](#use-the-generator).
+
+```bash
+touch ./mocks/schema.graphql
+```
+
+Paste or enter your schema into the newly-created file.
+
+### Add the `sms` script to `package.json`.
+
+```json
+"scripts": {
+  "sms": "sms -c mocks/config.json -s mocks/schema.graphql -p 4000"
+}
+```
+
+You can now use the command `npm run sms` to run your local Stateful Mocks Server.
 
 ## Run Stateful Mock Server
 
