@@ -4,11 +4,11 @@ outline: deep
 
 # Getting Started
 
-You can use the generator to add Stateful Mock Server to your existing node project. Whether you have your own schema, or you want to get started with an example schema and config, the process to get started is similar.
+You can [use the generator](#use-the-generator) to add Stateful Mock Server to your existing node project. Whether you have your own schema, or you want to get started with an example schema and config, the process to get started is similar.
 
 If you prefer, you can also get [manually install Stateful Mock Server](#manual-installation).
 
-## Run the Generator
+## Use the Generator
 
 ```bash
 npx @bitovi/stateful-mocks init
