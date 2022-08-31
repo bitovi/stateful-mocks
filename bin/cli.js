@@ -1,17 +1,26 @@
 const { Command } = require("commander");
-const { run } = require("./actions");
+const { run, gen } = require("./actions");
 const {
   CONFIG_FILE_PATH,
   SCHEMA_FILE_PATH,
   PORT,
-  QUICK_STARTS,
+  QUICK_STARTS
 } = require("./constants.js");
 const { ensureFileExists } = require("../dist/utils/config/validation");
 const { addScriptToPackageJson } = require("../dist/utils/io");
 const { ServerError } = require("../dist/errors/serverError");
 
 const program = new Command();
+
 const schemaOptions = ["-s, --schema <path>", "Path to GraphQL schema"];
+const entityOptions = [
+  "-e, --entity <name>",
+  "Entity to generate mock data for"
+];
+const fieldsOptions = [
+  "-f, --fields <fields>",
+  "Comma-separated list of fields to mock"
+];
 
 program
   .name("sms")
@@ -34,25 +43,25 @@ const initSms = async () => {
       {
         name: "configFilePath",
         message: "Config file path? (Will overwrite if exists)",
-        default: CONFIG_FILE_PATH,
+        default: CONFIG_FILE_PATH
       },
       {
         name: "schemaFilePath",
         message: "Schema file path? (Will overwrite if exists)",
-        default: SCHEMA_FILE_PATH,
+        default: SCHEMA_FILE_PATH
       },
       {
         name: "port",
         message: "Port number?",
         type: "number",
-        default: PORT,
+        default: PORT
       },
       {
         name: "startingConfig",
         message: "Choose a starting config:",
         type: "list",
-        choices: ["Empty", "User Admin"],
-      },
+        choices: ["Empty", "User Admin"]
+      }
     ]);
 
   const quickStart = QUICK_STARTS[startingConfig];
@@ -75,5 +84,13 @@ program
   .command("init")
   .description("CLI to generate quick start sms")
   .action(initSms);
+
+program
+  .command("gen")
+  .description("CLI to generate mock data for an entity of a GraphQL schema")
+  .requiredOption(...schemaOptions)
+  .requiredOption(...entityOptions)
+  .option(...fieldsOptions)
+  .action(gen);
 
 program.parse();
