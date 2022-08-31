@@ -9,7 +9,7 @@ export const gstatic = "https://fonts.gstatic.com";
 export const font = `${googleapis}/css2?family=Readex+Pro:wght@200;400;600&display=swap`;
 
 /* vitepress head */
-export const ogUrl = "https://stateful-mocks.pages.dev/";
+export const ogUrl = "https://stateful-mocks.bitovi.com/";
 export const ogImage = `${ogUrl}og.png`;
 
 /* GitHub and social links */
