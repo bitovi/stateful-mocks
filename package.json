@@ -1,63 +1,63 @@
 {
-	"name": "@bitovi/stateful-mocks",
-	"version": "0.5.1",
-	"main": "index.js",
-	"repository": "git@github.com:bitovi/stateful-mocks.git",
-	"author": "Bitovi",
-	"bugs": {
-		"url": "https://github.com/bitovi/stateful-mocks/issues"
-	},
-	"homepage": "https://www.bitovi.com/nodejs",
-	"license": "MIT",
-	"bin": {
-		"sms": "bin/cli.js"
-	},
-	"scripts": {
-		"build": "tsc",
-		"start:dev": "npm run build && node bin/cli.js -p 4000 -c demo/config.json -s demo/schema.graphql",
-		"cli:prod": "npm run build && node bin/cli.js -p 4000 -c demo/config.json -s demo/schema.graphql",
-		"test": "jest",
-		"test:watch": "jest --watch",
-		"test:verbose": "jest --watch --verbose",
-		"lint": "eslint .",
-		"lint:fix": "eslint --fix .",
-		"pretty": "prettier --check .",
-		"pretty:fix": "prettier --write .",
-		"release:major": "npm version major && git push && git push --tags",
-		"release:minor": "npm version minor && git push && git push --tags",
-		"release:patch": "npm version patch && git push && git push --tags",
-		"release:pre": "npm version prerelease && npm publish --tag pre && git push && git push --tags",
-		"prepublishOnly": "npm run build"
-	},
-	"devDependencies": {
-		"@bitovi/eslint-config": "^1.0.1",
-		"@types/jest": "^28.1.6",
-		"@types/node": "^18.0.1",
-		"eslint": "^8.17.0",
-		"eslint-config-prettier": "^8.5.0",
-		"husky": "^8.0.1",
-		"jest": "^28.1.1",
-		"lint-staged": "^13.0.3",
-		"nodemon": "^2.0.16",
-		"prettier": "^2.7.0",
-		"superagent-graphql": "^0.1.2",
-		"supertest": "^6.2.4",
-		"ts-jest": "^28.0.5",
-		"ts-node": "^10.8.1",
-		"typescript": "^4.7.3"
-	},
-	"dependencies": {
-		"@graphql-tools/mock": "^8.7.0",
-		"ajv": "^8.11.0",
-		"apollo-server": "^3.9.0",
-		"apollo-server-express": "^3.9.0",
-		"body-parser": "^1.20.0",
-		"casual": "^1.6.2",
-		"commander": "^9.3.0",
-		"express": "^4.18.1",
-		"graphql": "^15.8.0",
-		"human-readable-ids": "^1.0.4",
-		"inquirer": "^9.1.0",
-		"xstate": "^4.32.1"
-	}
+  "name": "@bitovi/stateful-mocks",
+  "version": "0.5.1",
+  "main": "index.js",
+  "repository": "git@github.com:bitovi/stateful-mocks.git",
+  "author": "Bitovi",
+  "bugs": {
+    "url": "https://github.com/bitovi/stateful-mocks/issues"
+  },
+  "homepage": "https://www.bitovi.com/nodejs",
+  "license": "MIT",
+  "bin": {
+    "sms": "bin/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start:dev": "npm run build && node bin/cli.js -p 4000 -c demo/config.json -s demo/schema.graphql",
+    "cli:prod": "npm run build && node bin/cli.js -p 4000 -c demo/config.json -s demo/schema.graphql",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:verbose": "jest --watch --verbose",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "pretty": "prettier --check .",
+    "pretty:fix": "prettier --write .",
+    "release:major": "npm version major && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
+    "release:patch": "npm version patch && git push && git push --tags",
+    "release:pre": "npm version prerelease && npm publish --tag pre && git push && git push --tags",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@bitovi/eslint-config": "^1.0.1",
+    "@types/jest": "^28.1.6",
+    "@types/node": "^18.0.1",
+    "eslint": "^8.17.0",
+    "eslint-config-prettier": "^8.5.0",
+    "husky": "^8.0.1",
+    "jest": "^28.1.1",
+    "lint-staged": "^13.0.3",
+    "nodemon": "^2.0.16",
+    "prettier": "^2.7.0",
+    "superagent-graphql": "^0.1.2",
+    "supertest": "^6.2.4",
+    "ts-jest": "^28.0.5",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "@graphql-tools/mock": "^8.7.0",
+    "ajv": "^8.11.0",
+    "apollo-server": "^3.9.0",
+    "apollo-server-express": "^3.9.0",
+    "body-parser": "^1.20.0",
+    "casual": "^1.6.2",
+    "commander": "^9.3.0",
+    "express": "^4.18.1",
+    "graphql": "^15.8.0",
+    "human-readable-ids": "^1.0.4",
+    "inquirer": "^9.1.0",
+    "xstate": "^4.32.1"
+  }
 }

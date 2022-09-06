@@ -1,25 +1,13 @@
 const { readFileSync } = require("fs");
-const { parse } = require("graphql");
 const path = require("path");
 const { getMocks } = require("../dist/generator");
-
-const getEntityFields = (entity, schema) => {
-  const parsedSchema = parse(schema);
-  const entityDefinition = parsedSchema.definitions.find(
-    (definition) => definition.name.value === entity
-  );
-  const fields = entityDefinition.fields.map((field) => field.name.value);
-
-  return fields;
-};
-
-const formatFields = (fields) => fields.split(",").join(" ");
+const { getEntityFields, formatFields } = require("./utils");
 
 const gen = async ({ schema: schemaFilePath, entity, fields }) => {
   const schema = readFileSync(path.join(process.cwd(), schemaFilePath), "utf8");
   const entityFields = fields
     ? formatFields(fields)
-    : getEntityFields(entity, schema);
+    : getEntityFields(schema, entity);
 
   const newSchema =
     schema +
@@ -28,10 +16,9 @@ const gen = async ({ schema: schemaFilePath, entity, fields }) => {
     query${entity}: ${entity}
   }  
   `;
-
   const { query, variables } = {
     query: `query Query { query${entity} { ${entityFields} } }`,
-    variables: {}
+    variables: {},
   };
   const mock = await getMocks({ query, schema: newSchema, variables });
   console.log(JSON.stringify(mock, null, "  "));
