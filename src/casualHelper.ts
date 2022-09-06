@@ -8,7 +8,7 @@ export const casualHelper = () => {
     number: {
       mock: casual.integer(1, 100),
     },
-    double: {
+    float: {
       mock: casual.double(1, 100),
     },
     boolean: {
