@@ -1,14 +1,26 @@
 const { readFileSync } = require("fs");
 const path = require("path");
-const { getMock } = require("../dist/generator");
+const { getMocks } = require("../dist/generator");
+const { getEntityFields, formatFields } = require("./utils");
 
-const gen = ({ schema: schemaFilePath, entity, fields }) => {
+const gen = async ({ schema: schemaFilePath, entity, fields }) => {
   const schema = readFileSync(path.join(process.cwd(), schemaFilePath), "utf8");
-  const mock = getMock({
-    schema,
-    entity,
-    fields: fields && fields.split(","),
-  });
+  const entityFields = fields
+    ? formatFields(fields)
+    : getEntityFields(schema, entity);
+
+  const newSchema =
+    schema +
+    `
+  type Query {
+    query${entity}: ${entity}
+  }  
+  `;
+  const { query, variables } = {
+    query: `query Query { query${entity} { ${entityFields} } }`,
+    variables: {},
+  };
+  const mock = await getMocks({ query, schema: newSchema, variables });
   console.log(JSON.stringify(mock, null, "  "));
 };
 

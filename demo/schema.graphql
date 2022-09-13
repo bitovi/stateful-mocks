@@ -1,8 +1,18 @@
+type CoolFirstPart {
+  name: Int!
+}
+
+type CoolId {
+  firstPart: CoolFirstPart!
+  secondPart: String!
+}
+
 type Account {
-  id: String!
+  id: CoolId!
   name: String!
   email: String!
-  password: String!
+  password: Int!
+  likesDogs: Boolean!
 }
 
 type Query {

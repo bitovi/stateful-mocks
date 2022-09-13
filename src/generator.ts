@@ -1,7 +1,7 @@
 import { GraphQLSchema } from "graphql";
+import { casualHelper } from "./casualHelper";
 
 const { mockServer } = require("@graphql-tools/mock");
-const casual = require("casual");
 const { parse } = require("graphql");
 
 const getFieldType = (
@@ -17,16 +17,7 @@ const getFieldType = (
 };
 
 const generateData = ({ name, type }: { name: string; type: string }) => {
-  switch (type) {
-    case "string":
-      return casual[name] || casual.word;
-
-    case "number":
-      return casual[name] || casual.integer(1, 100);
-
-    case "float":
-      return casual[name] || casual.double(1, 100);
-  }
+  return casualHelper().mock({ name, type });
 };
 
 const resolveTypeToData = ({
@@ -38,7 +29,7 @@ const resolveTypeToData = ({
 }) => {
   const type = getFieldType(field);
 
-  if (["string", "number", "float"].includes(type)) {
+  if (["string", "number", "float", "boolean"].includes(type)) {
     return generateData({ name: fieldName, type });
   } else {
     return getMock(field as object);
