@@ -1,23 +1,20 @@
-type CoolFirstPart {
-  name: Int!
-}
-
-type CoolId {
-  firstPart: CoolFirstPart!
-  secondPart: String!
-}
-
 type Account {
-  id: CoolId!
+  id: Int!
   name: String!
   email: String!
-  password: Int!
-  likesDogs: Boolean!
+  password: String!
+  token: String
 }
 
 type Query {
-  accountById(id: String): Account
+  accountById(id: Int!): Account
   accounts: [Account]
+}
+
+input CreateAccount {
+  name: String!
+  email: String!
+  password: String!
 }
 
 input CreateAccountInput {
@@ -27,18 +24,18 @@ input CreateAccountInput {
 }
 
 input UpdateAccountNameInput {
-  id: String!
+  id: Int!
   name: String!
 }
 
 input UpdateAccountPasswordInput {
-  id: String!
-  password: String!
+  id: Int!
+  password: Int!
 }
 
 type Mutation {
   createAccount(input: CreateAccountInput!): Account
   updateAccountName(input: UpdateAccountNameInput!): Account
   updateAccountPassword(input: UpdateAccountPasswordInput!): Account
-  removeAccount(id: String!): Account
+  removeAccount(id: Int!): Account
 }
