@@ -1,36 +1,40 @@
 exports.QUICK_STARTS = {
   "User Admin": {
-    schema: `type Person {
-    name: String!
-    age: Int!
-  }
-  
-  type Query {
-    personByName(name: String): Person 
-    people: [Person]
-  }
-  
-  input CreatePersonInput {
-    name: String!
-    age: Int!
-  }
-  
-  input UpdatePersonNameInput {
-    id: Int!
-    name: String!
-  }
-  
-  input UpdatePersonAgeInput {
-    id: Int!
-    age: Int!
-  }
-  
-  type Mutation {
-    createPerson(input: CreatePersonInput!): Person
-    updatePersonName(input: UpdatePersonNameInput!): Person
-    updatePersonAge(input: UpdatePersonAgeInput!): Person
-    removePerson(id: Int!): Person
-  }
+    schema: `type Account {
+  id: String!
+  name: String!
+  email: String!
+  password: String!
+  token: String!
+}
+
+type Query {
+  accountById(id: String): Account
+  accounts: [Account]
+}
+
+input CreateAccount {
+  name: String!
+  email: String!
+  password: String!
+}
+
+input UpdateAccountNameInput {
+  id: Int!
+  name: String!
+}
+
+input UpdateAccountPasswordInput {
+  id: Int!
+  password: Int!
+}
+
+type Mutation {
+  createAccount(input: CreateAccountInput!): Account
+  updateAccountName(input: UpdateAccountNameInput!): Account
+  updateAccountAge(input: UpdateAccountAgeInput!): Account
+  removeAccount(id: Int!): Account
+}
   `,
     config: {
       entities: {
