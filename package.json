@@ -1,6 +1,6 @@
 {
   "name": "@bitovi/stateful-mocks",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "main": "index.js",
   "repository": "git@github.com:bitovi/stateful-mocks.git",
   "author": "Bitovi",
