@@ -67,7 +67,7 @@ const initSms = async () => {
 
   const quickStart = QUICK_STARTS[startingConfig];
 
-  if (!quickStart || !quickStart.config || !quickStart.schema) {
+  if (!quickStart || !quickStart.config) {
     throw new ServerError(
       `Sorry, couldn't find this quick start configuration: "${startingConfig}"`
     );
