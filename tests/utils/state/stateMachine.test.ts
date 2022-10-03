@@ -1,7 +1,7 @@
 import {
   getEntityInstance,
   StateMachine,
-} from "../../../utils/state/stateMachine";
+} from "../../../dist/utils/state/stateMachine";
 
 const { statesData, stateMachine } = {
   statesData: {

@@ -2,19 +2,19 @@ import { ApolloServer, ExpressContext } from "apollo-server-express";
 import { Server } from "http";
 import request from "supertest";
 import graphql from "superagent-graphql";
-import { buildApolloServer } from "../server";
+import { buildApolloServer } from "../src/server";
 
 let servers: {
   apolloServer: ApolloServer<ExpressContext>;
   httpServer: Server;
 };
 
-jest.mock("../utils/io.ts");
+jest.mock("../src/utils/io.ts");
 
 beforeAll(async () => {
   servers = await buildApolloServer(
     "./config.json",
-    "src/tests/resources/testSchema.graphql"
+    "./tests/resources/testSchema.graphql"
   );
 });
 
