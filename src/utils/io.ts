@@ -30,7 +30,7 @@ export const addScriptToPackageJson = async (
   const pkgString = await readFile(pkgPath);
   const pkg = JSON.parse(pkgString);
   Object.assign(pkg.scripts ?? {}, {
-    sms: `npm run sms -c ${configPath} -s ${schemaPath} -p ${port}`,
+    sms: `sms -c ${configPath} -s ${schemaPath} -p ${port}`,
   });
 
   writeFile(pkgPath, JSON.stringify(pkg, null, "\t"));
