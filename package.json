@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/bitovi/stateful-mocks/issues"
   },
-  "homepage": "https://www.bitovi.com/nodejs",
+  "homepage": "https://www.bitovi.com/backend-consulting/nodejs-consulting",
   "license": "MIT",
   "bin": {
     "sms": "bin/cli.js"
