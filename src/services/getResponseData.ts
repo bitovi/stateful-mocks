@@ -7,11 +7,11 @@ export const getResponseData = (
   stateControllers: Array<StateController>,
   entities
 ) => {
-  const isComposedReponse = Array.isArray(response);
-  if (isComposedReponse) {
-    return response.map((responseChunk) => {
-      refreshInstanceState(responseChunk, stateControllers, entities);
-      return getEntityStateData(responseChunk, stateControllers);
+  const isArrayResponse = Array.isArray(response);
+  if (isArrayResponse) {
+    return response.map((responseItem) => {
+      refreshInstanceState(responseItem, stateControllers, entities);
+      return getEntityStateData(responseItem, stateControllers);
     });
   } else {
     refreshInstanceState(response, stateControllers, entities);
