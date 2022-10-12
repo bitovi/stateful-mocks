@@ -5,7 +5,10 @@ export class StateMachine {
   statesData: any;
 
   constructor(statesData, machine) {
-    const _machine = createMachine(machine);
+    const _machine = createMachine({
+      ...machine,
+      predictableActionArguments: true,
+    });
 
     this.interpreter = interpret(_machine).start();
     this.statesData = statesData;
@@ -13,7 +16,10 @@ export class StateMachine {
 
   refreshState(statesData, machine) {
     const currentState = this.getCurrentState();
-    const newMachine = createMachine(machine);
+    const newMachine = createMachine({
+      ...machine,
+      predictableActionArguments: true,
+    });
     this.interpreter = interpret(newMachine).start(currentState);
     this.statesData = statesData;
   }
