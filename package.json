@@ -37,6 +37,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "@bitovi/eslint-config": "^1.0.1",
     "@types/jest": "^28.1.6",
     "@types/node": "^18.0.1",
     "@unocss/preset-typography": "^0.45.5",
