@@ -46,7 +46,7 @@ type Person {
   id: Int!
   name: String!
   age: Int!
-  car: Car
+  car: Car!
 }
 
 type Car {

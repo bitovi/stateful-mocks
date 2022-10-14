@@ -53,23 +53,31 @@ describe("Integration Tests", () => {
         },
       },
     });
+  });
 
-    /*     const response2 = await request(servers.httpServer)
+  test("Test Query", async () => {
+    const response = await request(servers.httpServer)
       .post("/graphql")
       .use(
         graphql(
           `
             query Query {
-              people {
-                name
-                age
+              test {
+                text
+                score
               }
             }
-          `,
-          null
+          `
         )
       );
 
-    expect(response2.text).toBe({}); */
+    expect(JSON.parse(response.text)).toStrictEqual({
+      data: {
+        test: {
+          text: expect.any(String),
+          score: expect.any(Number),
+        },
+      },
+    });
   });
 });
