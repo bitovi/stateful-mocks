@@ -3,17 +3,23 @@ import { Server } from "http";
 import request from "supertest";
 import graphql from "superagent-graphql";
 import { buildApolloServer } from "../../src/server";
+import * as validationUtils from "../../src/utils/config/validation";
+
+jest.mock("../../src/utils/io.ts");
+jest
+  .spyOn(validationUtils, "validateConfigFileFormat")
+  .mockImplementation(async () => {
+    return Promise.resolve();
+  });
 
 let servers: {
   apolloServer: ApolloServer<ExpressContext>;
   httpServer: Server;
 };
 
-jest.mock("../../src/utils/io.ts");
-
 beforeAll(async () => {
   servers = await buildApolloServer(
-    "./config.json",
+    "./tests/resources/config.json",
     "./tests/resources/testSchema.graphql"
   );
 });
