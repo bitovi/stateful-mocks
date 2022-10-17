@@ -1,4 +1,5 @@
 import fs from "fs";
+import { validateConfigFileFormat } from "./config/validation";
 const fsPromises = fs.promises;
 
 export const createDirectory = (path) => {
