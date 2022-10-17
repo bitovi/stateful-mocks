@@ -17,8 +17,14 @@ export const readFile = async (path: string) => {
   return await fsPromises.readFile(path, "utf8");
 };
 
-export const watch = (path: string, cb: any) => {
-  fs.watch(path, "utf-8", cb);
+export const watchConfigFile = (path: string, cb: any) => {
+  const watcher = fs.watch(path, cb);
+
+  watcher.on("error", function (err) {
+    if (existsDirectory(path)) {
+      watcher.close();
+    }
+  });
 };
 
 export const addScriptToPackageJson = async (

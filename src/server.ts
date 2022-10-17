@@ -10,7 +10,7 @@ import {
   validateConfigFile,
   validateConfigFileFormat,
 } from "./utils/config/validation";
-import { watch } from "./utils/io";
+import { watchConfigFile } from "./utils/io";
 
 export async function startApolloServer(
   configFilePath: string,
@@ -35,7 +35,7 @@ export async function buildApolloServer(
 ): Promise<{ apolloServer: ApolloServer<ExpressContext>; httpServer: Server }> {
   await validateConfigFile(configFilePath);
 
-  watch(configFilePath, function (event, filename) {
+  watchConfigFile(configFilePath, () => {
     validateConfigFileFormat(configFilePath, () => {
       console.log("Your config.json format is incorrect.");
     });
