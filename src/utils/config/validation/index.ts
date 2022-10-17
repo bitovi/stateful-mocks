@@ -38,15 +38,17 @@ export const validateConfigFileFormat = async (
   isNotValidBehavior
 ) => {
   try {
-    let config = await readFile(configFilePath);
+    if (existsDirectory(configFilePath)) {
+      let config = await readFile(configFilePath);
 
-    if (config) {
-      config = JSON.parse(config);
+      if (config) {
+        config = JSON.parse(config);
 
-      const valid = validate(config);
+        const valid = validate(config);
 
-      if (!valid) {
-        isNotValidBehavior();
+        if (!valid) {
+          isNotValidBehavior();
+        }
       }
     }
   } catch (error: unknown) {

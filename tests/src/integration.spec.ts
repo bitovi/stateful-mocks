@@ -2,19 +2,25 @@ import { ApolloServer, ExpressContext } from "apollo-server-express";
 import { Server } from "http";
 import request from "supertest";
 import graphql from "superagent-graphql";
-import { buildApolloServer } from "../server";
+import { buildApolloServer } from "../../src/server";
+import * as validationUtils from "../../src/utils/config/validation";
+
+jest.mock("../../src/utils/io.ts");
+jest
+  .spyOn(validationUtils, "validateConfigFileFormat")
+  .mockImplementation(async () => {
+    return Promise.resolve();
+  });
 
 let servers: {
   apolloServer: ApolloServer<ExpressContext>;
   httpServer: Server;
 };
 
-jest.mock("../utils/io.ts");
-
 beforeAll(async () => {
   servers = await buildApolloServer(
-    "./config.json",
-    "src/tests/resources/testSchema.graphql"
+    "./tests/resources/config.json",
+    "./tests/resources/testSchema.graphql"
   );
 });
 
@@ -53,23 +59,31 @@ describe("Integration Tests", () => {
         },
       },
     });
+  });
 
-    /*     const response2 = await request(servers.httpServer)
+  test("Test Query", async () => {
+    const response = await request(servers.httpServer)
       .post("/graphql")
       .use(
         graphql(
           `
             query Query {
-              people {
-                name
-                age
+              test {
+                text
+                score
               }
             }
-          `,
-          null
+          `
         )
       );
 
-    expect(response2.text).toBe({}); */
+    expect(JSON.parse(response.text)).toStrictEqual({
+      data: {
+        test: {
+          text: expect.any(String),
+          score: expect.any(Number),
+        },
+      },
+    });
   });
 });
