@@ -120,7 +120,7 @@ describe("Init command", () => {
       }
     `;
 
-    writeFile(schemaPath, updatedSchema);
+    await writeFile(schemaPath, updatedSchema);
 
     const servers = await buildApolloServer(configPath, schemaPath);
 
