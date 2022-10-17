@@ -42,8 +42,9 @@ const execute = async (command, args, directory?: string) => {
 };
 
 beforeAll(async () => {
+  await execute(`npm`, ["init", "-y"], temporaryDirectoryName);
   await execute(
-    `npm init -y && npm`,
+    `npm`,
     ["install", "@bitovi/stateful-mocks"],
     temporaryDirectoryName
   );
@@ -58,8 +59,8 @@ describe("Init command", () => {
     const { ENTER, DOWN } = directionsUnicode;
 
     await executeWithInput(
-      "npx sms init",
-      [],
+      "npx",
+      ["sms", "init"],
       [configPath, ENTER, schemaPath, ENTER, "3000", ENTER, DOWN, ENTER],
       {
         cwd: temporaryDirectoryName,

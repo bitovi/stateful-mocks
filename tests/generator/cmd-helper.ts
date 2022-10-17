@@ -6,7 +6,7 @@ const createProcess = (
   args: Array<string> = [],
   options: Record<string, unknown>
 ) => {
-  return spawn(command, [args], options);
+  return spawn(command, args, options);
 };
 
 export const executeWithInput = (
