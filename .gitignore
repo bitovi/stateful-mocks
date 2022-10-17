@@ -1,5 +1,6 @@
 node_modules
 demo/config.json
+mocks/**
 **/*.log
 dist
 .DS_Store
