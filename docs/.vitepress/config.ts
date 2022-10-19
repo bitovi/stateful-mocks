@@ -63,7 +63,7 @@ export default {
         text: "Guides",
         items: [
           { text: "Getting Started", link: "/get-started" },
-          // { text: 'Understanding Mocks', link: '/getting-started' },
+          { text: "Tour the Quick Start App", link: "/tour" },
         ],
       },
     ],
