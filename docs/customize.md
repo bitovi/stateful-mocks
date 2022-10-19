@@ -10,67 +10,68 @@ Here’s an example `config.json`:
 
 ```json
 {
-    "entities": {
-        "Account": {
-            "stateMachine": {
-                "initial": "created",
-                "states": {
-                    "empty": {
-                        "on": {
-                            "create": "created"
-                        }
-                    },
-                    "created": {
-                        "on": { 
-       "updateName": "updatedName",
-                            "remove": "empty"
-                        }
-                    },
-                    "updatedName": {
-                        "on": {  
-                            "remove": "empty"
-                        }
-                    }
-                }
-            },
-            "instances": {
-                "John": {
-                    "statesData": {
-                        "created": {
-                            "id": 1,
-                            "name": "John Doe",
-                            "email": "john@mail.com",
-                            "password": "johnPass",
-                            "token": "voluptas"
-                        }
-                    }
-                }
-        }
-    },
-    "requests": [
-        {
-            "body": "{\"query\":\"query Query($accountByIdId: Int) {\\r\\n  accountById(id: $accountByIdId) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n    token\\r\\n  }\\r\\n}\",\"variables\":{\"accountByIdId\":1},\"operationName\":\"Query\"}",
-            "response": {
-                "entity": "Account",
-                "id": "John"
-            }
-        }, 
-  {
-   "body": "{\"query\":\"mutation Mutation($input: CreateAccountInput!) {\\r\\n  createAccount(input: $input) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n    token\\r\\n  }\\r\\n}\",\"variables\":{\"input\":{\"name\":\"John Doe\",\"email\":\"john@mail.com\",\"password\":\"johnPass\"}},\"operationName\":\"Mutation\"}",
-   "response": {
-    "entity": "Account",
-    "id": "John",
-    "state": "created"
-   },
-   "stateChanges": [
-    {
-     "entity": "Account",
-     "id": "John",
-     "event": "create"
+  "entities": {
+    "Account": {
+      "stateMachine": {
+        "initial": "created",
+        "states": {
+          "empty": {
+            "on": {
+              "create": "created"
+            }
+          },
+          "created": {
+            "on": { 
+              "updateName": "updatedName",
+              "remove": "empty"
+            }
+          },
+          "updatedName": {
+            "on": {  
+              "remove": "empty"
+            }
+          }
+        }
+      },
+      "instances": {
+        "John": {
+          "statesData": {
+            "created": {
+              "id": 1,
+              "name": "John Doe",
+              "email": "john@mail.com",
+              "password": "johnPass",
+              "token": "voluptas"
+            }
+          }
+        }
+      }
     }
-   ]
   },
-    ]
+  "requests": [
+    {
+      "body": "{\"query\":\"query Query($accountByIdId: Int) {\\r\\n  accountById(id: $accountByIdId) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n    token\\r\\n  }\\r\\n}\",\"variables\":{\"accountByIdId\":1},\"operationName\":\"Query\"}",
+      "response": {
+        "entity": "Account",
+        "id": "John"
+      }
+    }, 
+    {
+      "body": "{\"query\":\"mutation Mutation($input: CreateAccountInput!) {\\r\\n  createAccount(input: $input) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n    token\\r\\n  }\\r\\n}\",\"variables\":{\"input\":{\"name\":\"John Doe\",\"email\":\"john@mail.com\",\"password\":\"johnPass\"}},\"operationName\":\"Mutation\"}",
+      "response": {
+        "entity": "Account",
+        "id": "John",
+        "state": "created"
+      },
+      "stateChanges": [
+        {
+          "entity": "Account",
+          "id": "John",
+          "event": "create"
+        }
+      ]
+    },
+  ]
 }
 ```
 
