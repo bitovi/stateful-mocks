@@ -64,6 +64,7 @@ export default {
         items: [
           { text: "Getting Started", link: "/get-started" },
           { text: "Tour the Quick Start App", link: "/tour" },
+          { text: "Customize the Config", link: "/customize" },
         ],
       },
     ],
