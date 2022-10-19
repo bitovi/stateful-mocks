@@ -9,7 +9,7 @@ export default {
   enhanceApp({ app }) {
     // register global components and plugins
     googleAnalytics({
-      id: "UA-2302003-12", // Replace with your GoogleAnalytics ID, which should start with the 'G-'
+      id: "UA-2302003-12",
     });
   },
 };
