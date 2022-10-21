@@ -3,10 +3,16 @@ import concat from "concat-stream";
 import graphql from "superagent-graphql";
 import { spawn } from "cross-spawn";
 import { dirSync } from "tmp";
-
+import { ApolloServer, ExpressContext } from "apollo-server-express";
+import { Server } from "http";
 import { buildApolloServer } from "../../src/server";
 import { directionsUnicode, executeWithInput } from "./cmd-helper";
 import { existsDirectory, readFile, writeFile } from "../../src/utils/io";
+
+let server: {
+  apolloServer: ApolloServer<ExpressContext>;
+  httpServer: Server;
+};
 
 const temporaryDirectory = dirSync({
   unsafeCleanup: true,
@@ -50,7 +56,7 @@ beforeAll(async () => {
   );
 });
 
-afterAll(() => {
+afterAll(async () => {
   temporaryDirectory.removeCallback();
 });
 
@@ -122,9 +128,9 @@ describe("Init command", () => {
 
     await writeFile(schemaPath, updatedSchema);
 
-    const servers = await buildApolloServer(configPath, schemaPath);
+    server = await buildApolloServer(configPath, schemaPath);
 
-    const response = await request(servers.httpServer)
+    const response = await request(server.httpServer)
       .post("/graphql")
       .use(
         graphql(
@@ -147,7 +153,6 @@ describe("Init command", () => {
         },
       },
     });
-
-    servers.httpServer.close();
+    server.httpServer.close();
   });
 });
