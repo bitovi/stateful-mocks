@@ -70,3 +70,9 @@ The server will start after validating your schema and config file.
    ```
 
 That's it, the CI/CD workflow will do the rest.
+
+# We want to hear from you.
+
+Come chat with us about open source in our community [Slack](https://www.bitovi.com/community/slack).
+
+See what we're up to by following us on [Twitter](https://twitter.com/bitovi).
