@@ -83,46 +83,14 @@ describe("Init command", () => {
     expect(isValidSchemaPath).toEqual(true);
     expect(pkg.scripts).toHaveProperty("sms");
 
-    const updatedSchema = `type Account {
-        id: Int!
-        name: String!
-        email: String!
-        password: String!
-        token: String
-      } 
-
+    const updatedSchema = `
       type Person {
         age: Int!
         name: String!
       }
 
       type Query {
-        accountById(id: Int): Account
-        accounts: [Account]
         testRequest: Person
-      }
-
-      input CreateAccountInput {
-        name: String!
-        email: String!
-        password: String!
-      }
-
-      input UpdateAccountNameInput {
-        id: Int!
-        name: String!
-      }
-
-      input UpdateAccountPasswordInput {
-        id: Int!
-        password: String!
-      }
-
-      type Mutation {
-        createAccount(input: CreateAccountInput!): Account
-        updateAccountName(input: UpdateAccountNameInput!): Account
-        updateAccountPassword(input: UpdateAccountPasswordInput!): Account
-        removeAccount(id: Int!): Account
       }
     `;
 
