@@ -1,0 +1,20 @@
+type Account {
+  id: Int!
+  name: String!
+  email: String!
+  password: String!
+  token: Token!
+}
+
+type Token {
+  header: String!
+  payload: Payload!
+  signature: Int!
+}
+
+type Payload {
+  userName: String!
+  userId: ID!
+  userEmail: String!
+  isActiveUser: Boolean!
+}

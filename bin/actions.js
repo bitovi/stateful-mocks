@@ -22,6 +22,8 @@ const gen = async ({ schema: schemaFilePath, entity, fields }) => {
   };
   const mock = await getMocks({ query, schema: newSchema, variables });
   console.log(JSON.stringify(mock, null, "  "));
+
+  return mock;
 };
 
 const run = ({ schema: schemaFilePath, config: configFilePath, port }) => {
