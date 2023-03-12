@@ -57,7 +57,7 @@ export const findRequest = (
 
     return (
       String(queryName) === previousRequestQueryName &&
-      deepEqual(variables, previousRequestVariables)
+      deepEqual(variables, previousRequestVariables ?? {})
     );
   });
 };

@@ -26,7 +26,7 @@ export const getEntityName = (
 ) => {
   const type = getTypeDefinitionForRequest(requestName, requestType, schema);
 
-  if (type.kind === "ListType") {
+  if (type.kind === "ListType" || type.kind === "NonNullType") {
     return type.type.name.value;
   } else {
     return type.name.value;
