@@ -1,9 +1,6 @@
-import request from "supertest";
-import graphql from "superagent-graphql";
 import { dirSync } from "tmp";
 import { ApolloServer, ExpressContext } from "apollo-server-express";
 import { Server } from "http";
-import { buildApolloServer } from "../../src/server";
 import { directionsUnicode, execute, executeWithInput } from "./cmd-helper";
 import { existsDirectory, readFile, writeFile } from "../../src/utils/io";
 
@@ -28,8 +25,12 @@ let server: {
 
 beforeAll(async () => {
   server;
-  await execute("init -y", temporaryDirectoryName);
-  await execute("install @bitovi/stateful-mocks", temporaryDirectoryName);
+  await execute("npm", "init -y", temporaryDirectoryName);
+  await execute(
+    "npm",
+    "install @bitovi/stateful-mocks",
+    temporaryDirectoryName
+  );
 });
 
 afterAll(async () => {
@@ -38,9 +39,10 @@ afterAll(async () => {
 });
 
 describe("Init command", () => {
-  test("creates correct default sms setup", async () => {
+  test("Should create correct default sms setup", async () => {
     const { ENTER, DOWN } = directionsUnicode;
     await executeWithInput(
+      "npx",
       "sms init",
       [configPath, ENTER, schemaPath, ENTER, "3000", ENTER, DOWN, ENTER],
       {
@@ -60,7 +62,23 @@ describe("Init command", () => {
     expect(pkg.scripts).toHaveProperty("sms");
   });
 
-  test("returns correct entity after schema update", async () => {
+  test("Should return entity with gen command", async () => {
+    const result = await execute(
+      "npx",
+      "sms gen -s ./mocks/schema.graphql -e Account",
+      temporaryDirectoryName
+    );
+
+    expect(JSON.parse(result)).toMatchObject({
+      id: expect.any(Number),
+      name: expect.any(String),
+      email: expect.any(String),
+      password: expect.any(String),
+      token: expect.any(String),
+    });
+  });
+
+  test("Should return a new entity after schema update with gen command", async () => {
     const updatedSchema = `
       type Person {
         age: Int!
@@ -76,30 +94,15 @@ describe("Init command", () => {
 
     await writeFile(schemaPath, updatedSchema);
 
-    server = await buildApolloServer(configPath, schemaPath);
+    const result = await execute(
+      "npx",
+      "sms gen -s ./mocks/schema.graphql -e Person",
+      temporaryDirectoryName
+    );
 
-    const response = await request(server.httpServer)
-      .post("/graphql")
-      .use(
-        graphql(
-          `
-            query Query {
-              testRequest {
-                age
-                name
-              }
-            }
-          `
-        )
-      );
-
-    expect(JSON.parse(response.text)).toStrictEqual({
-      data: {
-        testRequest: {
-          age: expect.any(Number),
-          name: expect.any(String),
-        },
-      },
+    expect(JSON.parse(result)).toMatchObject({
+      age: expect.any(Number),
+      name: expect.any(String),
     });
   });
 });

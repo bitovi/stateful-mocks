@@ -1,24 +1,32 @@
 import { spawn } from "cross-spawn";
 
-export const execute = async (command, temporaryDirectoryName) => {
-  const child = spawn("npm", [command], {
+export const execute = async (command, args, temporaryDirectoryName) => {
+  const child = spawn(command, [args], {
     shell: true,
     cwd: temporaryDirectoryName,
   });
 
-  await new Promise((resolve) => {
+  let data = "";
+  for await (const chunk of child.stdout) {
+    data += chunk;
+  }
+
+  await new Promise((resolve, reject) => {
     child.on("close", resolve);
   });
+
+  return data;
 };
 
 export const executeWithInput = async (
+  command,
   args: string,
   inputs: Array<string> = [],
   options: Record<string, unknown>
 ) => {
   const timeout = 1000;
 
-  const child = spawn("npx", [args], options);
+  const child = spawn(command, [args], options);
 
   child.stdin.setDefaultEncoding("utf-8");
 

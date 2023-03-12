@@ -6,7 +6,7 @@ exports.QUICK_STARTS = {
   name: String!
   email: String!
   password: String!
-  token: String
+  token: String!
   }
 
   type Query {

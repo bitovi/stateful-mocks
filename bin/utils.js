@@ -7,7 +7,8 @@ const getTypeDefinition = (schema, type) => {
 };
 const recursivelyGetFields = (schema, fields) => {
   return fields.map(({ name, type }) => {
-    const { value } = type.type.name;
+
+    const { value } = type?.type?.name ?? type;
     const fieldName = name.value;
 
     if (isNativeGraphqlType(value)) {
