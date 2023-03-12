@@ -1,41 +1,46 @@
-import concat from "concat-stream";
 import { spawn } from "cross-spawn";
 
-const createProcess = (
-  command: string,
-  args: Array<string> = [],
-  options: Record<string, unknown>
-) => {
-  return spawn(command, args, options);
+export const execute = async (command, temporaryDirectoryName) => {
+  const child = spawn("npm", [command], {
+    shell: true,
+    cwd: temporaryDirectoryName,
+  });
+
+  await new Promise((resolve) => {
+    child.on("close", resolve);
+  });
 };
 
-export const executeWithInput = (
-  command: string,
-  args: Array<string> = [],
+export const executeWithInput = async (
+  args: string,
   inputs: Array<string> = [],
   options: Record<string, unknown>
 ) => {
   const timeout = 1000;
-  const childProcess = createProcess(command, args, options);
 
-  childProcess.stdin.setDefaultEncoding("utf-8");
+  const child = spawn("npx", [args], options);
+
+  child.stdin.setDefaultEncoding("utf-8");
 
   let currentInputTimeout;
 
   const loop = (inputs) => {
     if (!inputs.length) {
-      childProcess.stdin.end();
+      child.stdin.end();
       return;
     }
 
     currentInputTimeout = setTimeout(() => {
-      childProcess.stdin.write(inputs[0]);
+      child.stdin.write(inputs[0]);
       loop(inputs.slice(1));
     }, timeout);
   };
-  const promise = new Promise((resolve, reject) => {
-    childProcess.stderr.once("data", (err, data) => {
-      childProcess.stdin.end();
+
+  loop(inputs);
+
+  await new Promise((resolve, reject) => {
+    child.stderr.once("data", (err, data) => {
+      child.stdin.end();
 
       if (currentInputTimeout) {
         clearTimeout(currentInputTimeout);
@@ -45,15 +50,10 @@ export const executeWithInput = (
       reject(err.toString());
     });
 
-    childProcess.on("error", reject);
-    loop(inputs);
-    childProcess.stdout.pipe(
-      concat((result) => {
-        resolve(result.toString());
-      })
-    );
+    child.on("error", reject);
+
+    child.on("close", resolve);
   });
-  return promise;
 };
 
 export const directionsUnicode = {

@@ -1,18 +1,16 @@
 import request from "supertest";
-import concat from "concat-stream";
 import graphql from "superagent-graphql";
-import { spawn } from "cross-spawn";
 import { dirSync } from "tmp";
 import { ApolloServer, ExpressContext } from "apollo-server-express";
 import { Server } from "http";
 import { buildApolloServer } from "../../src/server";
-import { directionsUnicode, executeWithInput } from "./cmd-helper";
+import { directionsUnicode, execute, executeWithInput } from "./cmd-helper";
 import { existsDirectory, readFile, writeFile } from "../../src/utils/io";
 
-let server: {
-  apolloServer: ApolloServer<ExpressContext>;
-  httpServer: Server;
-};
+jest.mock("../../src/utils/io.ts", () => ({
+  ...jest.requireActual("../../src/utils/io.ts"),
+  watchConfigFile: jest.fn(),
+}));
 
 const temporaryDirectory = dirSync({
   unsafeCleanup: true,
@@ -23,52 +21,30 @@ const { name: temporaryDirectoryName } = temporaryDirectory;
 const configPath = `${temporaryDirectoryName}/mocks/config.json`;
 const schemaPath = `${temporaryDirectoryName}/mocks/schema.graphql`;
 
-const execute = async (command, args, directory?: string) => {
-  const childProcess = spawn(command, args, {
-    cwd: directory,
-  });
-
-  const promise = new Promise((resolve, reject) => {
-    childProcess.stderr.once("data", (err, data) => {
-      childProcess.stdin.end();
-
-      reject(err.toString());
-    });
-
-    childProcess.on("error", reject);
-
-    childProcess.stdout.pipe(
-      concat((result) => {
-        resolve(result.toString());
-      })
-    );
-  });
-
-  return promise;
+let server: {
+  apolloServer: ApolloServer<ExpressContext>;
+  httpServer: Server;
 };
 
 beforeAll(async () => {
-  await execute(`npm`, ["init", "-y"], temporaryDirectoryName);
-  await execute(
-    `npm`,
-    ["install", "@bitovi/stateful-mocks"],
-    temporaryDirectoryName
-  );
+  server;
+  await execute("init -y", temporaryDirectoryName);
+  await execute("install @bitovi/stateful-mocks", temporaryDirectoryName);
 });
 
 afterAll(async () => {
+  server?.httpServer?.close();
   temporaryDirectory.removeCallback();
 });
 
 describe("Init command", () => {
-  test("creates correct files", async () => {
+  test("creates correct default sms setup", async () => {
     const { ENTER, DOWN } = directionsUnicode;
-
     await executeWithInput(
-      "npx",
-      ["sms", "init"],
+      "sms init",
       [configPath, ENTER, schemaPath, ENTER, "3000", ENTER, DOWN, ENTER],
       {
+        shell: true,
         cwd: temporaryDirectoryName,
       }
     );
@@ -82,15 +58,19 @@ describe("Init command", () => {
     expect(isValidConfigPath).toBe(true);
     expect(isValidSchemaPath).toEqual(true);
     expect(pkg.scripts).toHaveProperty("sms");
+  });
 
+  test("returns correct entity after schema update", async () => {
     const updatedSchema = `
       type Person {
         age: Int!
         name: String!
       }
-
       type Query {
         testRequest: Person
+      }
+      type Mutation {
+        testMutation: Person
       }
     `;
 
@@ -121,6 +101,5 @@ describe("Init command", () => {
         },
       },
     });
-    server.httpServer.close();
   });
 });
