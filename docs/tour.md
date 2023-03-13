@@ -77,7 +77,7 @@ The configuration file returned by the user admin contains two instances, John a
 
 The entities property is an object with Graphql’s entities’ names as keys. Since our GraphQL schema only has one Object type, `Account`. `Account` is also our only entity. An entity is composed of:
 
-- **State machine:** the state machine is used to define state transitions rules. We use XState’s conventions:  . Each entity will have a different state machine, but the instance’s share the state machines rules.
+- **State machine:** the state machine is used to define state transitions rules. We use XState’s conventions: . Each entity will have a different state machine, but the instance’s share the state machines rules.
 
 ```json
 {
