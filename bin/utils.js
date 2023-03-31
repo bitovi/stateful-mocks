@@ -7,7 +7,7 @@ const getTypeDefinition = (schema, type) => {
 };
 const recursivelyGetFields = (schema, fields) => {
   return fields.map(({ name, type }) => {
-    const { value } = type.type.name;
+    const { value } = type?.type?.name ?? type.name;
     const fieldName = name.value;
 
     if (isNativeGraphqlType(value)) {
@@ -37,7 +37,13 @@ const getEntityFields = (schema, entity) => {
   return recursivelyGetFields(parsedSchema, entityTypeDefinition.fields);
 };
 
-const formatFields = (fields) => fields.split(",").join(" ");
+const formatFields = (fields) => {
+  let splitFields = fields.split(",").join(" ");
+  splitFields = splitFields.replaceAll("[", "{");
+  splitFields = splitFields.replaceAll("]", "}");
+
+  return splitFields;
+};
 
 module.exports = {
   getEntityFields,
