@@ -32,4 +32,4 @@ export const readFile = async (path: string) => {
 };
 
 // No-op
-export const watch = (path: string, cb) => {};
+export const watchConfigFile = (_path: string, _cb: any) => {};

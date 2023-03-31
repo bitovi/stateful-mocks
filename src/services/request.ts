@@ -19,7 +19,7 @@ const getRequestFromConfig = (
     const { variables: previousRequestVariables } = JSON.parse(request.body);
     return (
       getRequestName(request) === operationName &&
-      deepEqual(variables, previousRequestVariables)
+      deepEqual(variables, previousRequestVariables ?? {})
     );
   });
 };
@@ -58,7 +58,7 @@ export const executeRequest = async (
   controllers: Array<StateController>
 ) => {
   const config = await getConfig(configFilePath);
-  const { entities, requests } = config;
+  const { entities } = config;
   const request = getRequestFromConfig(operationName, variables, config);
   const updatedControllers = ensureControllersAreUpdated(controllers, config);
 

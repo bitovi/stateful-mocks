@@ -21,13 +21,13 @@ Here’s an example `config.json`:
             }
           },
           "created": {
-            "on": { 
+            "on": {
               "updateName": "updatedName",
               "remove": "empty"
             }
           },
           "updatedName": {
-            "on": {  
+            "on": {
               "remove": "empty"
             }
           }
@@ -55,7 +55,7 @@ Here’s an example `config.json`:
         "entity": "Account",
         "id": "John"
       }
-    }, 
+    },
     {
       "body": "{\"query\":\"mutation Mutation($input: CreateAccountInput!) {\\r\\n  createAccount(input: $input) {\\r\\n    id\\r\\n    name\\r\\n    email\\r\\n    password\\r\\n    token\\r\\n  }\\r\\n}\",\"variables\":{\"input\":{\"name\":\"John Doe\",\"email\":\"john@mail.com\",\"password\":\"johnPass\"}},\"operationName\":\"Mutation\"}",
       "response": {
@@ -70,7 +70,7 @@ Here’s an example `config.json`:
           "event": "create"
         }
       ]
-    },
+    }
   ]
 }
 ```
@@ -84,7 +84,7 @@ The entities property is an object with a key for each one of the GraphQL types 
 - **stateMachine:**
   - **initial:** you can use this property to define what the initial state will be for your instances.
   - **states:** you can use this property to define what state transitions are allowed. In the above example, it is possible to transition from `empty` to `created`, but not from `empty` to `updatedName`. It's also possible to transition from created to `updatedName` and `empty`, but it's not possible to transition from `updatedName` to `created`.
-- **instances:** by default, whenever a new request is made we’ll generate mock data that matches the required fields and save it in the first instance of an entity (or in the first two if your request returns an array). You may modify it if you want your data to look different.  Just be sure your changes don't conflict with your GraphQL schema:
+- **instances:** by default, whenever a new request is made we’ll generate mock data that matches the required fields and save it in the first instance of an entity (or in the first two if your request returns an array). You may modify it if you want your data to look different. Just be sure your changes don't conflict with your GraphQL schema:
 
 ```json
  "updatedName": {
