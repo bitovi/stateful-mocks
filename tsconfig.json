@@ -7,6 +7,6 @@
     "allowJs": true,
     "strictNullChecks": true
   },
-  "include": ["./src/**/*"],
+  "include": ["./src/**/*", "tests"],
   "exclude": ["./dist/**/*", "./bin/**/*"]
 }

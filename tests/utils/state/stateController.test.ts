@@ -1,4 +1,4 @@
-import { getControllers } from "../../../utils/state/stateController";
+import { getControllers } from "../../../src/utils/state/stateController";
 
 describe("getControllers", () => {
   const cases = [

@@ -2,19 +2,28 @@ import { ApolloServer, ExpressContext } from "apollo-server-express";
 import { Server } from "http";
 import request from "supertest";
 import graphql from "superagent-graphql";
-import { buildApolloServer } from "../server";
+import { buildApolloServer } from "../src/server";
+import * as validationUtils from "../src/utils/config/validation";
+
+jest.mock("../src/utils/io.ts");
+
+jest
+  .spyOn(validationUtils, "validateConfigFileFormat")
+  .mockImplementation(async () => {
+    return Promise.resolve();
+  });
 
 let servers: {
   apolloServer: ApolloServer<ExpressContext>;
   httpServer: Server;
 };
 
-jest.mock("../utils/io.ts");
+jest.mock("../src/utils/io.ts");
 
 beforeAll(async () => {
   servers = await buildApolloServer(
-    "./config.json",
-    "src/tests/resources/testSchema.graphql"
+    "./tests/resources/config.json",
+    "./tests/resources/testSchema.graphql"
   );
 });
 
@@ -23,6 +32,10 @@ afterAll(() => {
 });
 
 describe("Integration Tests", () => {
+/*   test("1", () => {
+    expect(1).toEqual(1)
+  })
+ */
   test("Test Person", async () => {
     const response = await request(servers.httpServer)
       .post("/graphql")
@@ -52,7 +65,39 @@ describe("Integration Tests", () => {
           age: expect.any(Number),
         },
       },
-    });
+    }); 
+  }); 
+  
+/*   test("Test Person", async () => {
+    const response = await request(servers.httpServer)
+      .post("/graphql")
+      .use(
+        graphql(
+          `
+            mutation Mutation($input: CreatePersonInput!) {
+              createPerson(input: $input) {
+                name
+                age
+              }
+            }
+          `,
+          {
+            input: {
+              name: "Mark Repka",
+              age: 32,
+            },
+          }
+        )
+      );
+
+    expect(JSON.parse(response.text)).toStrictEqual({
+      data: {
+        createPerson: {
+          name: expect.any(String),
+          age: expect.any(Number),
+        },
+      },
+    }); */
 
     /*     const response2 = await request(servers.httpServer)
       .post("/graphql")
@@ -71,5 +116,5 @@ describe("Integration Tests", () => {
       );
 
     expect(response2.text).toBe({}); */
-  });
+/*   }); */
 });

@@ -3,3 +3,4 @@ demo/config.json
 **/*.log
 dist
 .DS_Store
+mocks/**
